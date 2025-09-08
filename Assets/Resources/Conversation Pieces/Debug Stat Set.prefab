@@ -1,0 +1,72 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &1771343755690524936
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 3524354762443874308}
+  - component: {fileID: -800947339989845693}
+  m_Layer: 0
+  m_Name: Debug Stat Set
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &3524354762443874308
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1771343755690524936}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 0
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &-800947339989845693
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1771343755690524936}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ce56d926c544d4d1eaa47f5eb8094f24, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  go_to_next_node: 1
+  executed_from_load: 0
+  editorOnly: 1
+  runOncePerSession: 1
+  sessionKey: DebugInitNode_Ran
+  clearMessagesForCurrentScene: 0
+  resetCharacterLocations: 0
+  regenerateFootballSchedule: 0
+  setWeek: 0
+  weekValue: 1
+  setPlayerName: 0
+  playerName: Player
+  setTraits: 1
+  humor: 0
+  charisma: 0
+  empathy: 0
+  grades: 0
+  stageSeeds: []
+  boolFlags: []
+  numFlags: []
+  stringFlags: []
+  placeCharacters: []
+  simulateFootballProgress: 0
+  markFirstNGamesPlayed: 0
+  winsAmongMarked: 0
+  printSummaryToConsole: 1

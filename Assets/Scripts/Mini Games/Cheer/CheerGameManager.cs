@@ -145,10 +145,13 @@ public class CheerGameManager : MonoBehaviour
         }
         else
         {
-        Debug.Log($"No game this week, going home...");
+            awayTeamNameText.text = "OTHER TEAM";
+            scoreboardAwayTeamText.text = "OTHER TEAM'S MASCOT";
+
+        Debug.Log($"No game this week, going home...faking it");
         // No game this week, or already played
-        SceneManager.LoadScene("Post Game");
-        return;
+//        SceneManager.LoadScene("Post Game");
+//        return;
             
         }
         
