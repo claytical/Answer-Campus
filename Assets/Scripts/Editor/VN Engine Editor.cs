@@ -249,16 +249,28 @@ namespace VNEngine
             go.AddComponent<WaitNode>();
         }
 
-
-        [MenuItem("GameObject/VN Engine/Branching/Show Choices", false, 0)]
-        private static void ShowChoicesNode(MenuCommand menuCommand)
+// GameObject ▸ VN Engine ▸ Branching ▸ Gate Traits
+        [MenuItem("GameObject/VN Engine/Branching/Gate Traits", false, 0)]
+        private static void GateTraits(MenuCommand menuCommand)
         {
-            GameObject go = new GameObject("Show Choices");     // Create new object
-            GameObjectUtility.SetParentAndAlign(go, menuCommand.context as GameObject); // Parent the new object
-            Undo.RegisterCreatedObjectUndo(go, "Create " + go.name);    // Register the creation in the undo system
+            GameObject go = new GameObject("Gate Traits");
+            GameObjectUtility.SetParentAndAlign(go, menuCommand.context as GameObject);
+            Undo.RegisterCreatedObjectUndo(go, "Create " + go.name);
             Selection.activeObject = go;
 
-            go.AddComponent<ChoiceNode>();
+            go.AddComponent<GateTraitsNode>();
+        }
+
+// GameObject ▸ VN Engine ▸ Branching ▸ Show Choice
+        [MenuItem("GameObject/VN Engine/Branching/Show Choice", false, 0)]
+        private static void ShowChoiceNode(MenuCommand menuCommand)
+        {
+            GameObject go = new GameObject("Show Choice");
+            GameObjectUtility.SetParentAndAlign(go, menuCommand.context as GameObject);
+            Undo.RegisterCreatedObjectUndo(go, "Create " + go.name);
+            Selection.activeObject = go;
+
+            go.AddComponent<ShowChoiceNode>(); // <-- new lean node
         }
 
 

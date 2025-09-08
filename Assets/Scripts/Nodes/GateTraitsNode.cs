@@ -41,6 +41,7 @@ namespace VNEngine
     /// Gates a branch on core traits and/or football performance,
     /// then applies success/failure deltas and optionally jumps.
     /// </summary>
+    [AddComponentMenu("VN Engine/Branching/Trait Check")]
     public class GateTraitsNode : Node
     {
         [Header("Requirements (All must pass)")]
