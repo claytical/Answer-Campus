@@ -9,7 +9,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4901222880874125326}
-  - component: {fileID: 3478344447253204653}
+  - component: {fileID: 2331663064522061495}
   m_Layer: 0
   m_Name: Simple Show Choices
   m_TagString: Untagged
@@ -32,7 +32,7 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &3478344447253204653
+--- !u!114 &2331663064522061495
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -41,7 +41,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 2633198021704740248}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 13efc8e93034644a886053bbd9a6f0aa, type: 3}
+  m_Script: {fileID: 11500000, guid: b53734dc413e348579dd61685c53ee9d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   go_to_next_node: 1

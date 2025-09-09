@@ -41,7 +41,6 @@ namespace VNEngine
     /// Gates a branch on core traits and/or football performance,
     /// then applies success/failure deltas and optionally jumps.
     /// </summary>
-    [AddComponentMenu("VN Engine/Branching/Trait Check")]
     public class GateTraitsNode : Node
     {
         [Header("Requirements (All must pass)")]
@@ -162,7 +161,7 @@ namespace VNEngine
             if (string.IsNullOrEmpty(json))
                 return (0, 0, 0, 0f);
 
-            FootballGameListWrapper wrapper = JsonUtility.FromJson<FootballGameListWrapper>(json);
+         /*   FootballGameListWrapper wrapper = JsonUtility.FromJson<FootballGameListWrapper>(json);
             if (wrapper == null || wrapper.games == null)
                 return (0, 0, 0, 0f);
 
@@ -170,7 +169,9 @@ namespace VNEngine
             int losses = wrapper.games.Count(g => g.played && !g.won);
             int played = wins + losses;
             float winRate = (played > 0) ? (float)wins / played : 0f;
-            return (wins, losses, played, winRate);
+           */
+//            return (wins, losses, played, winRate);
+            return (0, 0, 0, 0);
         }
 
         private static bool CompareNumber(float current, NumberCompare op, float target)

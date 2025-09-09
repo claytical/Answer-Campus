@@ -9,7 +9,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 446614}
-  - component: {fileID: 1886183941345670964}
+  - component: {fileID: 6568508446615833468}
   m_Layer: 0
   m_Name: Gate Stat Node
   m_TagString: Untagged
@@ -32,7 +32,7 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1886183941345670964
+--- !u!114 &6568508446615833468
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -41,26 +41,20 @@ MonoBehaviour:
   m_GameObject: {fileID: 154954}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 32788745b3c6046cfbad75eb64cc4052, type: 3}
+  m_Script: {fileID: 11500000, guid: 50d57877ed0b8429fbf083a3c73042b8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   go_to_next_node: 1
   executed_from_load: 0
-  traitRequirements:
-  - trait: 1
-    compare: 0
-    value: 0
-  - trait: 0
-    compare: 0
-    value: 0
+  traitRequirements: []
   footballRequirement:
-    check: 1
+    check: 0
     threshold: 0
-  successDeltas:
-  - trait: 2
-    amount: 0
-  successNode: {fileID: 0}
-  successMessage: 
+  successDeltas: []
+  successConversation: {fileID: 0}
+  successLogMessage: 
+  continueCurrentOnSuccess: 0
   failureDeltas: []
-  failureNode: {fileID: 0}
-  failureMessage: 
+  failureConversation: {fileID: 0}
+  failureLogMessage: 
+  continueCurrentOnFailure: 1

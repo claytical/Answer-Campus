@@ -9,7 +9,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 3524354762443874308}
-  - component: {fileID: -800947339989845693}
+  - component: {fileID: 4159695202618861708}
   m_Layer: 0
   m_Name: Debug Stat Set
   m_TagString: Untagged
@@ -32,7 +32,7 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &-800947339989845693
+--- !u!114 &4159695202618861708
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -41,7 +41,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1771343755690524936}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ce56d926c544d4d1eaa47f5eb8094f24, type: 3}
+  m_Script: {fileID: 11500000, guid: a407c3f74673542359a090260c5ac0f7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   go_to_next_node: 1
@@ -65,7 +65,6 @@ MonoBehaviour:
   boolFlags: []
   numFlags: []
   stringFlags: []
-  placeCharacters: []
   simulateFootballProgress: 0
   markFirstNGamesPlayed: 0
   winsAmongMarked: 0

@@ -42,7 +42,7 @@ namespace VNEngine
         public List<StringFlag> stringFlags = new List<StringFlag>(); // e.g., "Best Friend" = "Breanna"
 
         [Header("Map Placement (Optional)")]
-        public List<CharacterLocation> placeCharacters = new List<CharacterLocation>(); // requires your existing CharacterLocation struct
+//        public List<CharacterLocation> placeCharacters = new List<CharacterLocation>(); // requires your existing CharacterLocation struct
 
         [Header("Football Progress (Optional)")]
         public bool simulateFootballProgress = false;
@@ -138,55 +138,6 @@ namespace VNEngine
                     StatsManager.Set_Numbered_Stat(stageKey, seed.stage);
                 }
             }
-
-            // 5) Football schedule
-            if (regenerateFootballSchedule || string.IsNullOrEmpty(StatsManager.Get_String_Stat("FootballSchedule")))
-            {
-                FootballScheduler.GenerateSchedule();
-            }
-
-            if (simulateFootballProgress && markFirstNGamesPlayed > 0)
-            {
-                string json = StatsManager.Get_String_Stat("FootballSchedule");
-                if (!string.IsNullOrEmpty(json))
-                {
-                    var wrapper = JsonUtility.FromJson<FootballGameListWrapper>(json);
-                    if (wrapper != null && wrapper.games != null && wrapper.games.Count > 0)
-                    {
-                        int n = Mathf.Min(markFirstNGamesPlayed, wrapper.games.Count);
-                        int winsToAssign = Mathf.Clamp(winsAmongMarked, 0, n);
-
-                        // mark first N played; first `winsToAssign` as wins
-                        for (int i = 0; i < n; i++)
-                        {
-                            wrapper.games[i].played = true;
-                            wrapper.games[i].won = i < winsToAssign;
-                        }
-
-                        // write back
-                        StatsManager.Set_String_Stat("FootballSchedule",
-                            JsonUtility.ToJson(new FootballGameListWrapper { games = wrapper.games }));
-                    }
-                }
-            }
-
-            // 6) Map placements
-            if (resetCharacterLocations)
-            {
-                PlayerPrefsExtra.SetList<CharacterLocation>("characterLocations", new List<CharacterLocation>());
-            }
-            if (placeCharacters != null && placeCharacters.Count > 0)
-            {
-                PlayerPrefsExtra.SetList<CharacterLocation>("characterLocations", new List<CharacterLocation>(placeCharacters));
-            }
-
-            // 7) Optional message pruning for current scene (mirrors your Location cleanup pattern)
-            if (clearMessagesForCurrentScene)
-            {
-                // no-op here: we don't know the scene name at this point; writers typically do this directly in Location
-                // Left intentionally blank to avoid surprising data loss.
-            }
-
             if (printSummaryToConsole)
             {
                 Debug.Log($"[DebugInitNode] Applied. Week={StatsManager.Get_Numbered_Stat("Week")} " +
