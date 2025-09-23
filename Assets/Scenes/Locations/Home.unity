@@ -11038,8 +11038,20 @@ MonoBehaviour:
   calendarGrid: {fileID: 1849813262}
   checkmark: {fileID: 5999730407538579610, guid: 2fd38ac507d9c4bc8bec74fef4b3072d, type: 3}
   week: 3
-  ambientFMODEventName: event:/AMB_Room
-  musicFMODEventName: event:/MX_HomeDorm
+  ambientFMODEventReference:
+    Guid:
+      Data1: -806253618
+      Data2: 1168809291
+      Data3: 256591249
+      Data4: 614258614
+    Path: event:/AMB_Room
+  musicFMODEventReference:
+    Guid:
+      Data1: -1019235451
+      Data2: 1082529368
+      Data3: 786269106
+      Data4: 1526366140
+    Path: event:/MX_HomeDorm
   finalExamLocation: {fileID: 1678822709}
   characters: {fileID: 283277974}
   finalReport: {fileID: 38714519}

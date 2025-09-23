@@ -8,9 +8,9 @@ namespace VNEngine
     {
         public Character character = Character.LEILANI; // Fixed: this node only applies to Leilani
         public string sceneName = "Lecture Hall";
-        public string ambientFMODEventName;
-        public string musicFMODEventName;
-        public string characterMODEventName;
+        public EventReference ambientFMODEventName;
+        public EventReference musicFMODEventName;
+        public EventReference characterMODEventName;
 
         [System.Serializable]
         public class StageConversation
@@ -78,17 +78,17 @@ namespace VNEngine
                 {
                     Debug.Log($"Routing to stage {currentStage} conversation.");
                     route.conversation.Start_Conversation();
-                    if (ambientFMODEventName != null)
+                    if (!ambientFMODEventName.IsNull)
                     {
                         FMODAudioManager.Instance.PlayMusic(ambientFMODEventName);
                     }
 
-                    if (musicFMODEventName != null)
+                    if (!musicFMODEventName.IsNull)
                     {
                         FMODAudioManager.Instance.PlayMusic(musicFMODEventName);
                     }
 
-                    if (characterMODEventName != null)
+                    if (!characterMODEventName.IsNull)
                     {
                         FMODAudioManager.Instance.PlayMusic(characterMODEventName);
                     }

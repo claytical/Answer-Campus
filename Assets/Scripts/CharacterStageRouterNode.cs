@@ -17,9 +17,8 @@ namespace VNEngine
         }
 
         public string currentSceneName; // Match PlayerPrefsExtra location value (e.g., "Library")
-        public string ambientFMODEventName;
-        public string musicFMODEventName;
-        public string characterMODEventName;
+        public EventReference ambientFMODEventName;
+        public EventReference musicFMODEventName;
         public List<StageConversation> routes;
         public List<ConversationManager> fallbackConversations;
         public ConversationManager repeatableFallback;
@@ -28,22 +27,20 @@ namespace VNEngine
         private EventInstance ambientFMODEvent;
 public override void Run_Node()
 {
-    musicFMODEvent = FMODAudioManager.Instance.currentMusic;
-    ambientFMODEvent = FMODAudioManager.Instance.currentAmbient;
+    if (FMODAudioManager.Instance != null)
+    {
 
-    if (!string.IsNullOrEmpty(musicFMODEventName))
-    {
-        FMODAudioManager.Instance.PlayMusic(musicFMODEventName);
-    }
-    else
-    {
-        FMODAudioManager.Instance.StopMusic();
+        if (!musicFMODEventName.IsNull)
+        {
+            FMODAudioManager.Instance.PlayMusic(musicFMODEventName);
+        }
+
+        if (!ambientFMODEventName.IsNull)
+        {
+            FMODAudioManager.Instance.PlayAmbient(ambientFMODEventName);
+        }
     }
 
-    if (!string.IsNullOrEmpty(ambientFMODEventName))
-    {
-        FMODAudioManager.Instance.PlayAmbient(ambientFMODEventName);
-    }
     List<CharacterLocation> characterLocations = PlayerPrefsExtra.GetList<CharacterLocation>("characterLocations", new List<CharacterLocation>());
     CharacterLocation? selected = null;
 

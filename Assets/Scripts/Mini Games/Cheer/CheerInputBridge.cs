@@ -40,6 +40,13 @@ public class CheerInputBridge : MonoBehaviour
         Debug.Log($"[INPUT] {dir} at {timestamp:F3}");
     }
 
+// CheerInputBridge.cs
+
+    public void DiscardBefore(double minTimestamp)
+    {
+        while (inputQueue.Count > 0 && inputQueue.Peek().timestamp < minTimestamp)
+            inputQueue.Dequeue();
+    }
 
     public bool TryGetNextDirection(out CheerDirection dir, out double timestamp)
     {

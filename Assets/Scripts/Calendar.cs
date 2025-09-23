@@ -4,9 +4,7 @@ using UnityEngine;
 using VNEngine;
 using TMPro;
 using System;
-using System.Collections.Generic;
 using UnityEngine.UI;
-using Random = System.Random;
 using FMODUnity;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -95,17 +93,17 @@ public static class SemesterHelper
     {
         if (week <= 2)
             return "August";
-        else if (week > 2 && week <= 5)
+        else if (week is > 2 and <= 5)
             return "September";
-        else if (week >= 6 && week <= 9)
+        else if (week is >= 6 and <= 9)
             return "October";
-        else if (week >= 10 && week <= 14)
+        else if (week is >= 10 and <= 14)
             return "November";
-        else if (week >= 15 && week <= 16)
+        else if (week is >= 15 and <= 16)
             return "December";
         else
-        Debug.Log($"Week is {week}");
-            return "Unknown"; // Safety catch
+            Debug.Log($"Week is {week}");
+        return "Unknown"; // Safety catch
     }
 
     public static int GetDaysToCrossOut(int week)
@@ -218,9 +216,9 @@ public class Calendar : MonoBehaviour
     public TextMeshProUGUI studyPrompt;
     public Transform calendarGrid;
     public GameObject checkmark;
-    public int week;
-    public string ambientFMODEventName;
-    public string musicFMODEventName;
+    public int week; 
+    public EventReference ambientFMODEventReference;
+    public EventReference musicFMODEventReference;
     public Location finalExamLocation;
     public Characters characters;
     public GameObject finalReport;
@@ -268,19 +266,19 @@ public class Calendar : MonoBehaviour
     
     void Start()
     {
-        if (ambientFMODEventName != null)
+        if (!ambientFMODEventReference.IsNull)
         {
             if (FMODAudioManager.Instance != null)
             {
-                FMODAudioManager.Instance.PlayAmbient(ambientFMODEventName);
+                FMODAudioManager.Instance.PlayAmbient(ambientFMODEventReference);
             }
         }
 
-        if (musicFMODEventName != null)
+        if (musicFMODEventReference.IsNull)
         {
             if (FMODAudioManager.Instance != null)
             {
-                FMODAudioManager.Instance.PlayMusic(musicFMODEventName);
+                FMODAudioManager.Instance.PlayMusic(musicFMODEventReference);
             }
         }
         FMODAudioManager.Instance.PrintActiveMusicInstances();

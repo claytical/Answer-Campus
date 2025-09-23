@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using FMODUnity;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
@@ -59,10 +60,9 @@ public struct CheerLeader
 [System.Serializable]
 public class CheerClip
 {
-    public string countdownClipEvent;
     public int countdownParameter;
-    public string gameClipEvent;
     public int gameClipParameter;
+
     public float[] beatTimes; // One timestamp (in seconds) per cheer
 }
 
@@ -73,8 +73,12 @@ public class CheerGameManager : MonoBehaviour
     //public TextMeshProUGUI comboDisplayText;
     public GameObject scoreboardUI;
     public AudioSource audioSource;
-    public string crowd;
+    public EventReference crowd;
+    public EventReference countdownEvent;
+    public EventReference gameEvent;
+    
     public AudioClip introClip;
+    
     public TextMeshProUGUI homeScoreText;
     public TextMeshProUGUI awayScoreText;
     public TextMeshProUGUI awayTeamNameText;
@@ -96,10 +100,15 @@ public class CheerGameManager : MonoBehaviour
 
     public Sprite upGlyph, downGlyph, leftGlyph, rightGlyph;
     public Sprite failUpGlyph, failDownGlyph, failLeftGlyph, failRightGlyph;
+
+// Existing colors (keep as-is)
     public Color dimColor = new Color(1,1,1,0.4f);
     public Color highlightColor = Color.white;
     public Color successColor = Color.green;
     public Color failColor = Color.red;
+
+// NEW: tint used during the input window
+    public Color comboWindowColor = Color.blue;
 
     private Dictionary<int, (CheerDirection a, CheerDirection b)> activeDirections = new();
 
@@ -109,7 +118,7 @@ public class CheerGameManager : MonoBehaviour
     private int awayScore = 0;
     private int currentQuarter = 1;
     private CheerClip selectedCheerClip;
-    
+    private int _lastCheerIdx = -1;
 
     [Header("Round Settings")]
     public float comboDisplayTime = 1f;
@@ -117,6 +126,8 @@ public class CheerGameManager : MonoBehaviour
     public int gameNumber = 0;
     public int weekNumber = 0;
     string awayTeam; 
+    private readonly Dictionary<int, Coroutine> countdowns = new();
+    private bool gotTwo;
 
     private static readonly Dictionary<CheerCombo, CheerDirection[]> comboMap = new()
     {
@@ -158,6 +169,12 @@ public class CheerGameManager : MonoBehaviour
         StartCoroutine(GameFlowRoutine());
     }
 
+    private void SetLeaderGlyphTint(int idx, Color c) {
+        if (matchSequences == null || idx < 0 || idx >= matchSequences.Count) return;
+        var leader = matchSequences[idx];
+        if (leader.cheerleader.glyphA) leader.cheerleader.glyphA.color = c;
+        if (leader.cheerleader.glyphB) leader.cheerleader.glyphB.color = c;
+    }
     IEnumerator GameFlowRoutine()
     {
         yield return StartCoroutine(FadeFromBlack());
@@ -181,17 +198,19 @@ public class CheerGameManager : MonoBehaviour
             scoreboardUI.SetActive(false);
             if (playableGameRoot != null) playableGameRoot.SetActive(true);
 
-            selectedCheerClip = cheers[Random.Range(0, cheers.Length)];
-            
+            selectedCheerClip = cheers[PickCheerIndex()];
+            Debug.Log($"Playing Event: {countdownEvent.ToString()}");
             yield return StartCoroutine(FMODAudioManager.Instance.PlayOneShotAndWaitPrecise(
-                selectedCheerClip.countdownClipEvent,
+                countdownEvent,
                 "Countdown",
                 selectedCheerClip.countdownParameter
             ));
             
             // Wait one frame to ensure playback is initialized
             yield return null;
-            FMODAudioManager.Instance.PlayOneShot(selectedCheerClip.gameClipEvent,
+            Debug.Log($"Playing Cheer Event: {gameEvent.ToString()}");
+
+            FMODAudioManager.Instance.PlayOneShot(gameEvent,
                 "Cheer",
                 selectedCheerClip.gameClipParameter);
             float startTime = Time.time;
@@ -204,9 +223,9 @@ public class CheerGameManager : MonoBehaviour
 
             if (accuracy == 1f) {
                 homeScore += 7;
-            } else if (accuracy > 0.5f) {
+            } else if (accuracy > 0.75f) {
                 homeScore += 3;
-            } else if (accuracy > 0f) {
+            } else if (accuracy > .5f) {
                 awayScore += 3;
             } else {
                 awayScore += 7;
@@ -238,15 +257,19 @@ public class CheerGameManager : MonoBehaviour
         combos.Remove(CheerCombo.Default);
         for (int i = 0; i < beatCount; i++)
         {
-            float targetTime = startTime + selectedCheerClip.beatTimes[i];
+            float thisBeat  = startTime + selectedCheerClip.beatTimes[i];
+            float nextBeatT = (i + 1 < beatCount) 
+                ? startTime + selectedCheerClip.beatTimes[i + 1]
+                : (i > 0 
+                    ? thisBeat + (selectedCheerClip.beatTimes[i] - selectedCheerClip.beatTimes[i - 1])
+                    : thisBeat + 0.8f); // single-beat fallback
+
             CheerCombo combo = combos[Random.Range(0, combos.Count)];
 
             int leaderIdx = i % matchSequences.Count;
             var leader = matchSequences[leaderIdx];
-
-            double timeout = 1.0;  // Max seconds to wait for sync
-            double startWait = AudioSettings.dspTime;
-            while (Time.time < targetTime)
+            Debug.Log($"Leader is {leaderIdx}");
+            while (Time.time < thisBeat)
             {
                 yield return null;
             }
@@ -255,76 +278,123 @@ public class CheerGameManager : MonoBehaviour
             MoveSpotlight(leaderIdx);
             ShowGlyphs(combo, leaderIdx);
             leader.cheerleader.cheer.SetCombo(combo);
-
-            yield return new WaitForSeconds(comboDisplayTime);
+            // Instead of: yield return new WaitForSeconds(comboDisplayTime);
+            float beatLen = Mathf.Max(0.05f, nextBeatT - thisBeat);
+            float displayTime = Mathf.Min(0.5f * beatLen, 0.35f);  // <= half a beat, capped
+            yield return new WaitForSeconds(displayTime);
+    // open the input window now
             leader.cheerleader.cheer.SetCombo(CheerCombo.Default);
+            // After combo display:
+            float windowStart = Time.time;
 
-            CheerDirection inputA = CheerDirection.Up;
-            CheerDirection inputB = CheerDirection.Up;
-            float inputDeadline = (i + 1 < selectedCheerClip.beatTimes.Length)
-                ? startTime + selectedCheerClip.beatTimes[i + 1]
-                : targetTime + 1.2f;
+            const float inputWindowFraction = 1f;   // 0.25f for quarter-beat if you want it tighter
+            const float minWindowSeconds    = 0.20f;
 
-            yield return null;
-            yield return StartCoroutine(WaitForTwoUniqueDirections((a, b) => {
-                inputA = a;
-                inputB = b;
-            }, inputDeadline));
+            float desired  = beatLen * inputWindowFraction;
+            float rawEnd   = windowStart + Mathf.Max(minWindowSeconds, desired);
+            float latest   = nextBeatT + 0.02f;     // grace near the next beat
 
+// ✅ final deadline is never earlier than windowStart + minWindowSeconds
+            float inputDeadline = Mathf.Max(windowStart + minWindowSeconds, Mathf.Min(rawEnd, latest));
+
+// Optional: don’t extend past the next beat target (tiny grace OK)
+            inputDeadline = Mathf.Min(inputDeadline, nextBeatT + 0.02f);
+
+// Discard pre-window presses from the display phase
+            CheerInputBridge.Instance.Clear();
+            Debug.Log($"Starting Tint Countdown with deadline of {inputDeadline}");
+            StartCountdownTintSafe(leaderIdx, windowStart, inputDeadline);
+            CheerDirection inputA = CheerDirection.Up, inputB = CheerDirection.Down;
+            gotTwo = false;
+            Debug.Log($"Waiting for Directions {Time.time} / {inputDeadline}");
+            yield return StartCoroutine(WaitForTwoUniqueDirections((a, b, g2) => { inputA = a; inputB = b; gotTwo = g2; }, inputDeadline));
+            Debug.Log($"Stop Waiting for Directions {Time.time} / {inputDeadline}");
+
+            StopCountdownTintSafe(leaderIdx);
+           
             CheerCombo attempt = GetComboFromDirs(inputA, inputB);
-            bool success = (attempt == combo);
+            Debug.Log($"Attempting Combo {inputA} : {inputB} - {attempt.ToString()}");
+            bool success = gotTwo && (attempt == combo);   // <-- require the pair
 
             if (success)
             {
                 amplification += amplificationPerSuccess;
                 combosMade++;
+                Debug.Log($"Successful Combo {attempt.ToString()} / {combosMade}");
             }
+            StopCountdownTintSafe(leaderIdx); // no-op if you aren’t using it
+            Debug.Log($"Flashing Successful Feedback");
             FlashGlyphFeedback(leaderIdx, success);
 // 👇 WAIT for the reset coroutine to finish
             yield return new WaitForSecondsRealtime(0.6f);
+            Debug.Log($"Reset Visuals");
 
 // 👇 Now hide the glyphs and reset the combo pose
             HideGlyphs(leaderIdx);
             leader.cheerleader.cheer.SetCombo(CheerCombo.Default);
             UnhighlightAll();
+            Debug.Log($"Clearing Input Bridge");
             CheerInputBridge.Instance.Clear();
             yield return new WaitForSeconds(0.2f);
         }
 
     }
 
-    IEnumerator WaitForTwoUniqueDirections(System.Action<CheerDirection, CheerDirection> callback, float deadlineTime)
+    private void StartCountdownTintSafe(int idx, float start, float end)
     {
-        
-        CheerDirection? first = null;
-        CheerDirection? second = null;
+        if (countdowns.Remove(idx, out var prev) && prev != null) StopCoroutine(prev);
+        if (Time.time >= end) return;
+        var co = StartCoroutine(ComboCountdownVisual(idx, start, end));
+        if (co != null) countdowns[idx] = co;
+    }
 
-        while (AudioSettings.dspTime < deadlineTime)
+    private void StopCountdownTintSafe(int idx)
+    {
+        if (countdowns.Remove(idx, out var co) && co != null) StopCoroutine(co);
+    }
+
+// BEFORE: IEnumerator WaitForTwoUniqueDirections(Action<CheerDirection,CheerDirection> cb, float deadlineTime)
+// AFTER:
+    IEnumerator WaitForTwoUniqueDirections(System.Action<CheerDirection, CheerDirection, bool> callback,
+        float deadlineTime)
+    {
+        CheerDirection? first = null, second = null;
+
+        while (Time.time < deadlineTime) // <-- same clock as the deadline
         {
-            if (CheerInputBridge.Instance.TryGetNextDirection(out var dir, out double inputTime))
+            if (CheerInputBridge.Instance.TryGetNextDirection(out var dir, out var _))
             {
-                Debug.Log($"[TIMING] Got {dir} at {inputTime:F3}");
-                if (!first.HasValue)
-                {
-                    first = dir;
-                    
-                }
-                else if (!second.HasValue && dir != first.Value)
-                {
-                    second = dir;
-                    
-                    break;
-                }
+                if (!first.HasValue) first = dir;
+                else if (!second.HasValue && dir != first.Value) { second = dir; break; }
             }
-
             yield return null;
         }
 
-        var finalFirst = first ?? CheerDirection.Up;
-        var finalSecond = second ?? CheerDirection.Down;
+        var a = first  ?? CheerDirection.Up;
+        var b = second ?? CheerDirection.Down;
+        gotTwo = first.HasValue && second.HasValue;
+        callback(a, b, gotTwo);
+    }
 
-        Debug.Log($"[FINAL INPUT] Using: {finalFirst}, {finalSecond}");
-        callback(finalFirst, finalSecond);
+
+    private IEnumerator ComboCountdownVisual(int idx, float startTime, float deadlineTime)
+    {
+        if (matchSequences == null || idx < 0 || idx >= matchSequences.Count) yield break;
+
+        var leader = matchSequences[idx];
+        var a = leader.cheerleader.glyphA;
+        var b = leader.cheerleader.glyphB;
+        if (a == null || b == null) yield break;
+
+        // Lerp color from blue → red across the window
+        while (Time.time < deadlineTime)
+        {
+            float t = Mathf.InverseLerp(startTime, deadlineTime, Time.time);
+            Color c = Color.Lerp(highlightColor, failColor, t);
+            a.color = c;
+            b.color = c;
+            yield return null;
+        }
     }
 
     IEnumerator FadeFromBlack()
@@ -512,9 +582,12 @@ public class CheerGameManager : MonoBehaviour
             {
                 leader.cheerleader.glyphA.sprite = GetFailGlyphSprite(dirs.a);
                 leader.cheerleader.glyphB.sprite = GetFailGlyphSprite(dirs.b);
+                
             }
             else
             {
+                leader.cheerleader.glyphA.color = failColor;
+                leader.cheerleader.glyphB.color = failColor;                
                 Debug.LogWarning($"Missing direction data for idx {idx}");
             }
         }
@@ -523,7 +596,15 @@ public class CheerGameManager : MonoBehaviour
         StartCoroutine(ResetGlyphsAfterDelay(leader.cheerleader, idx, 0.5f));
 
     }
-
+    int PickCheerIndex()
+    {
+        if (cheers == null || cheers.Length == 0) return -1;
+        int idx;
+        if (cheers.Length == 1) return 0;
+        do { idx = Random.Range(0, cheers.Length); } while (idx == _lastCheerIdx);
+        _lastCheerIdx = idx;
+        return idx;
+    }
     private IEnumerator ResetGlyphsAfterDelay(CheerLeader cheer, int leaderIdx, float delay)
     {
         yield return new WaitForSecondsRealtime(delay);

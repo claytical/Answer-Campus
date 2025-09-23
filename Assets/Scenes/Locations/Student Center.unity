@@ -44470,6 +44470,46 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 1997937893}
     - target: {fileID: 1611349575936783945, guid: 0991620b818a844c8872842d42ccce09, type: 3}
+      propertyPath: musicFMODEventName.Path
+      value: event:/MX_StudentCenter
+      objectReference: {fileID: 0}
+    - target: {fileID: 1611349575936783945, guid: 0991620b818a844c8872842d42ccce09, type: 3}
+      propertyPath: ambientFMODEventName.Path
+      value: event:/AMB_Room
+      objectReference: {fileID: 0}
+    - target: {fileID: 1611349575936783945, guid: 0991620b818a844c8872842d42ccce09, type: 3}
+      propertyPath: musicFMODEventName.Guid.Data1
+      value: 1485655968
+      objectReference: {fileID: 0}
+    - target: {fileID: 1611349575936783945, guid: 0991620b818a844c8872842d42ccce09, type: 3}
+      propertyPath: musicFMODEventName.Guid.Data2
+      value: 1200566780
+      objectReference: {fileID: 0}
+    - target: {fileID: 1611349575936783945, guid: 0991620b818a844c8872842d42ccce09, type: 3}
+      propertyPath: musicFMODEventName.Guid.Data3
+      value: -1703484526
+      objectReference: {fileID: 0}
+    - target: {fileID: 1611349575936783945, guid: 0991620b818a844c8872842d42ccce09, type: 3}
+      propertyPath: musicFMODEventName.Guid.Data4
+      value: -1196307609
+      objectReference: {fileID: 0}
+    - target: {fileID: 1611349575936783945, guid: 0991620b818a844c8872842d42ccce09, type: 3}
+      propertyPath: ambientFMODEventName.Guid.Data1
+      value: -806253618
+      objectReference: {fileID: 0}
+    - target: {fileID: 1611349575936783945, guid: 0991620b818a844c8872842d42ccce09, type: 3}
+      propertyPath: ambientFMODEventName.Guid.Data2
+      value: 1168809291
+      objectReference: {fileID: 0}
+    - target: {fileID: 1611349575936783945, guid: 0991620b818a844c8872842d42ccce09, type: 3}
+      propertyPath: ambientFMODEventName.Guid.Data3
+      value: 256591249
+      objectReference: {fileID: 0}
+    - target: {fileID: 1611349575936783945, guid: 0991620b818a844c8872842d42ccce09, type: 3}
+      propertyPath: ambientFMODEventName.Guid.Data4
+      value: 614258614
+      objectReference: {fileID: 0}
+    - target: {fileID: 1611349575936783945, guid: 0991620b818a844c8872842d42ccce09, type: 3}
       propertyPath: fallbackConversations.Array.size
       value: 3
       objectReference: {fileID: 0}

@@ -38,7 +38,6 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0, g: 0, b: 0, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -3027,7 +3026,27 @@ MonoBehaviour:
   playableGameRoot: {fileID: 1673124421}
   scoreboardUI: {fileID: 1143768871}
   audioSource: {fileID: 489348331}
-  crowd: FX_Crowd
+  crowd:
+    Guid:
+      Data1: 549308498
+      Data2: 1221114894
+      Data3: -1442803566
+      Data4: 2005692175
+    Path: event:/AMB_Outdoors
+  countdownEvent:
+    Guid:
+      Data1: -36406547
+      Data2: 1167132098
+      Data3: -213374021
+      Data4: 2049608505
+    Path: event:/Band Countdown
+  gameEvent:
+    Guid:
+      Data1: -85882567
+      Data2: 1303328545
+      Data3: 672970408
+      Data4: -1359722296
+    Path: event:/Band Cheer
   introClip: {fileID: 8300000, guid: 3e79479f580a743d9b0599e8bf9a072c, type: 3}
   homeScoreText: {fileID: 1495140842}
   awayScoreText: {fileID: 1599534754}
@@ -3071,10 +3090,9 @@ MonoBehaviour:
   highlightColor: {r: 1, g: 1, b: 1, a: 1}
   successColor: {r: 0, g: 1, b: 0, a: 1}
   failColor: {r: 1, g: 0, b: 0, a: 1}
+  comboWindowColor: {r: 0, g: 0, b: 1, a: 1}
   cheers:
-  - countdownClipEvent: Band Countdown
-    countdownParameter: 0
-    gameClipEvent: Band Cheer
+  - countdownParameter: 0
     gameClipParameter: 0
     beatTimes:
     - 0
@@ -3084,9 +3102,7 @@ MonoBehaviour:
     - 10
     - 11.82
     - 13.59
-  - countdownClipEvent: Band Countdown
-    countdownParameter: 0
-    gameClipEvent: Band Cheer
+  - countdownParameter: 0
     gameClipParameter: 1
     beatTimes:
     - 0
@@ -3102,9 +3118,7 @@ MonoBehaviour:
     - 20.9
     - 21.9
     - 23.7
-  - countdownClipEvent: Band Countdown
-    countdownParameter: 1
-    gameClipEvent: Band Cheer
+  - countdownParameter: 1
     gameClipParameter: 3
     beatTimes:
     - 0
@@ -3115,9 +3129,7 @@ MonoBehaviour:
     - 7
     - 8.7
     - 10.2
-  - countdownClipEvent: Band Countdown
-    countdownParameter: 1
-    gameClipEvent: Band Cheer
+  - countdownParameter: 1
     gameClipParameter: 2
     beatTimes:
     - 0

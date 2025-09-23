@@ -755,10 +755,8 @@ MonoBehaviour:
   switchSettingsMigration: 1
   HasSourceProject: 1
   HasPlatforms: 1
-  sourceProjectPath: ../../../Library/CloudStorage/GoogleDrive-c.ewing@miami.edu/Shared
-    drives/NERDLab/Games/Answer Campus/Music/FMOD Projects/AnswerCampus_MusicSound/AnswerCampus_MusicSound.fspro
-  sourceBankPath: ../../../Library/CloudStorage/GoogleDrive-c.ewing@miami.edu/Shared
-    drives/NERDLab/Games/Answer Campus/Music/FMOD Projects/AnswerCampus_MusicSound/Build
+  sourceProjectPath: ../../../Downloads/AnswerCampus_FMOD2.02/AnswerCampus_MusicSound.fspro
+  sourceBankPath: ../../../Downloads/AnswerCampus_FMOD2.02/Build
   sourceBankPathUnformatted: 
   BankRefreshCooldown: 5
   ShowBankRefreshWindow: 0
