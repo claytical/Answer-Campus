@@ -13,10 +13,10 @@ MonoBehaviour:
   m_Name: Beau
   m_EditorClassIdentifier: 
   characterName: Beau
-  promptType: 0
+  promptType: 1
   timerDuration: 60
-  showTimer: 0
-  minSpawnInterval: 2
+  showTimer: 1
+  minSpawnInterval: 1
   maxSpawnInterval: 3
   chanceOfCorrectLetter: 0.5
   allowHints: 0

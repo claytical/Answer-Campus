@@ -283,7 +283,6 @@ public class CheerGameManager : MonoBehaviour
             float displayTime = Mathf.Min(0.5f * beatLen, 0.35f);  // <= half a beat, capped
             yield return new WaitForSeconds(displayTime);
     // open the input window now
-            leader.cheerleader.cheer.SetCombo(CheerCombo.Default);
             // After combo display:
             float windowStart = Time.time;
 
@@ -309,6 +308,7 @@ public class CheerGameManager : MonoBehaviour
             Debug.Log($"Waiting for Directions {Time.time} / {inputDeadline}");
             yield return StartCoroutine(WaitForTwoUniqueDirections((a, b, g2) => { inputA = a; inputB = b; gotTwo = g2; }, inputDeadline));
             Debug.Log($"Stop Waiting for Directions {Time.time} / {inputDeadline}");
+            leader.cheerleader.cheer.SetCombo(CheerCombo.Default);
 
             StopCountdownTintSafe(leaderIdx);
            

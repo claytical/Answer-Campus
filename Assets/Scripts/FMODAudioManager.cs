@@ -1,5 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
+using System;
 using UnityEngine;
 using FMODUnity;
 using FMOD.Studio;
@@ -20,6 +22,47 @@ public class FMODAudioManager : MonoBehaviour
     private Coroutine currentMusicCoroutine;
     private List<EventInstance> allCreatedInstances = new();
 
+    private readonly System.Collections.Generic.Dictionary<EventInstance, EVENT_CALLBACK> _markerCbs
+        = new(new EventInstanceComparer());
+
+    public EventInstance StartEventWithMarkers(
+        EventReference evt,
+        Action<string,int> onMarker,
+        string paramName = null, float paramValue = 0f)
+    {
+        if (evt.IsNull) { Debug.LogWarning("[FMOD] StartEventWithMarkers: NULL event"); return default; }
+
+        var inst = RuntimeManager.CreateInstance(evt);
+        AttachIf3D(inst, GetListenerTransform(), GetListenerRigidbody()); // your attach helper
+
+        if (!string.IsNullOrEmpty(paramName))
+            inst.setParameterByName(paramName, paramValue, ignoreseekspeed:true);
+
+        EVENT_CALLBACK cb = (type, _inst, paramPtr) =>
+        {
+            if (type == EVENT_CALLBACK_TYPE.TIMELINE_MARKER)
+            {
+                var props = Marshal.PtrToStructure<FMOD.Studio.TIMELINE_MARKER_PROPERTIES>(paramPtr);
+                string markerName = props.name;
+
+                int    ms   = props.position; // ms from event start
+                try { onMarker?.Invoke(name, ms); } catch (Exception e) { Debug.LogException(e); }
+            }
+            else if (type == EVENT_CALLBACK_TYPE.STOPPED)
+            {
+                _markerCbs.Remove(inst);
+            }
+            return FMOD.RESULT.OK;
+        };
+
+        inst.setCallback(cb, EVENT_CALLBACK_TYPE.TIMELINE_MARKER | EVENT_CALLBACK_TYPE.STOPPED);
+        _markerCbs[inst] = cb;
+
+        inst.start();
+        inst.release(); // one-shot lifetime
+
+        return inst;
+    }
 
     public void PrintActiveMusicInstances()
     {
@@ -35,7 +78,11 @@ public class FMODAudioManager : MonoBehaviour
             }
         }
     }
-
+    private class EventInstanceComparer : System.Collections.Generic.IEqualityComparer<EventInstance>
+    {
+        public bool Equals(EventInstance a, EventInstance b) => a.handle == b.handle;
+        public int GetHashCode(EventInstance e) => e.handle.GetHashCode();
+    }
     public void PlayMusic(EventReference eventName, float fadeDuration = 1f)
     {
         if (currentMusicCoroutine != null)
