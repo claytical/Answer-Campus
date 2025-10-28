@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<objects serializationModel="Studio.02.03.00">
+	<object class="ParameterPreset" id="{6a481c76-bab6-4745-b979-b94bfc045d2a}">
+		<property name="name">
+			<value>CheerSelect</value>
+		</property>
+		<relationship name="folder">
+			<destination>{172a9c95-d4ae-479c-95d4-8efe6f611c9f}</destination>
+		</relationship>
+		<relationship name="parameter">
+			<destination>{94aef217-7172-421d-a9e8-dc981ab7ed51}</destination>
+		</relationship>
+	</object>
+	<object class="GameParameter" id="{94aef217-7172-421d-a9e8-dc981ab7ed51}">
+		<property name="parameterType">
+			<value>1</value>
+		</property>
+		<property name="maximum">
+			<value>5</value>
+		</property>
+		<property name="initialValue">
+			<value>0</value>
+		</property>
+	</object>
+</objects>

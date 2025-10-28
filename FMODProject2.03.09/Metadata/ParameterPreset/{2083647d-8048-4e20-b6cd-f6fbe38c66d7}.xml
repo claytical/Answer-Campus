@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<objects serializationModel="Studio.02.03.00">
+	<object class="ParameterPreset" id="{2083647d-8048-4e20-b6cd-f6fbe38c66d7}">
+		<property name="name">
+			<value>CrowdIntensity</value>
+		</property>
+		<relationship name="folder">
+			<destination>{172a9c95-d4ae-479c-95d4-8efe6f611c9f}</destination>
+		</relationship>
+		<relationship name="parameter">
+			<destination>{5f9e980e-ca52-4aad-967e-b776ea8effa9}</destination>
+		</relationship>
+	</object>
+	<object class="GameParameter" id="{5f9e980e-ca52-4aad-967e-b776ea8effa9}">
+		<property name="initialValue">
+			<value>0</value>
+		</property>
+	</object>
+</objects>

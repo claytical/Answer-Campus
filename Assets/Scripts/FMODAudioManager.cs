@@ -5,11 +5,17 @@ using System;
 using UnityEngine;
 using FMODUnity;
 using FMOD.Studio;
-//using Debug = FMOD.Debug;
 using STOP_MODE = FMOD.Studio.STOP_MODE;
-
+using System.Collections.Concurrent;
 public class FMODAudioManager : MonoBehaviour
 {
+    [StructLayout(LayoutKind.Sequential)]
+    private struct PARAMETER_CALLBACK
+    {
+        public FMOD.Studio.PARAMETER_ID parameter;
+        public float value;
+        public float finalvalue;
+    }
     public static FMODAudioManager Instance { get; private set; }
     private string currentEventPath = "";
     private AudioSource audioSource;
@@ -21,48 +27,9 @@ public class FMODAudioManager : MonoBehaviour
 
     private Coroutine currentMusicCoroutine;
     private List<EventInstance> allCreatedInstances = new();
-
-    private readonly System.Collections.Generic.Dictionary<EventInstance, EVENT_CALLBACK> _markerCbs
-        = new(new EventInstanceComparer());
-
-    public EventInstance StartEventWithMarkers(
-        EventReference evt,
-        Action<string,int> onMarker,
-        string paramName = null, float paramValue = 0f)
-    {
-        if (evt.IsNull) { Debug.LogWarning("[FMOD] StartEventWithMarkers: NULL event"); return default; }
-
-        var inst = RuntimeManager.CreateInstance(evt);
-        AttachIf3D(inst, GetListenerTransform(), GetListenerRigidbody()); // your attach helper
-
-        if (!string.IsNullOrEmpty(paramName))
-            inst.setParameterByName(paramName, paramValue, ignoreseekspeed:true);
-
-        EVENT_CALLBACK cb = (type, _inst, paramPtr) =>
-        {
-            if (type == EVENT_CALLBACK_TYPE.TIMELINE_MARKER)
-            {
-                var props = Marshal.PtrToStructure<FMOD.Studio.TIMELINE_MARKER_PROPERTIES>(paramPtr);
-                string markerName = props.name;
-
-                int    ms   = props.position; // ms from event start
-                try { onMarker?.Invoke(name, ms); } catch (Exception e) { Debug.LogException(e); }
-            }
-            else if (type == EVENT_CALLBACK_TYPE.STOPPED)
-            {
-                _markerCbs.Remove(inst);
-            }
-            return FMOD.RESULT.OK;
-        };
-
-        inst.setCallback(cb, EVENT_CALLBACK_TYPE.TIMELINE_MARKER | EVENT_CALLBACK_TYPE.STOPPED);
-        _markerCbs[inst] = cb;
-
-        inst.start();
-        inst.release(); // one-shot lifetime
-
-        return inst;
-    }
+    private readonly ConcurrentQueue<string> _paramLog = new ConcurrentQueue<string>();
+    private readonly Dictionary<EventInstance, EVENT_CALLBACK> _markerCbs = new(new EventInstanceComparer());
+    
 
     public void PrintActiveMusicInstances()
     {
@@ -78,7 +45,7 @@ public class FMODAudioManager : MonoBehaviour
             }
         }
     }
-    private class EventInstanceComparer : System.Collections.Generic.IEqualityComparer<EventInstance>
+    private class EventInstanceComparer : IEqualityComparer<EventInstance>
     {
         public bool Equals(EventInstance a, EventInstance b) => a.handle == b.handle;
         public int GetHashCode(EventInstance e) => e.handle.GetHashCode();
@@ -90,7 +57,98 @@ public class FMODAudioManager : MonoBehaviour
 
         currentMusicCoroutine = StartCoroutine(TransitionToNewMusic(eventName, fadeDuration));
     }
+    public EventInstance StartEventWithTimeline(EventReference evt, Action<string,int> onMarker = null, Action<TIMELINE_BEAT_PROPERTIES> onBeat = null, Action onStopped = null, string paramName = null, float? paramValue = null, Transform attachTo = null, bool ignoreSeekSpeed = true) {
+        // Create instance
+        var inst = FMODUnity.RuntimeManager.CreateInstance(evt);
+        if (!inst.isValid())
+        {
+            Debug.LogError("[FMODAudioManager] StartEventWithTimeline: Failed to create instance.");
+            return default;
+        }
+        inst.getDescription(out var desc);
+        desc.getPath(out string path);
+        Debug.Log($"[FMOD] CreateInstance OK → {path}  handle={inst.handle}");
 
+// after setParameterByName(...)
+        if (!string.IsNullOrEmpty(paramName) && paramValue.HasValue)
+        {
+            var r = inst.setParameterByName(paramName, paramValue.Value, ignoreSeekSpeed);
+            Debug.Log($"[FMOD] setParameter '{paramName}'={paramValue.Value} → {r}");
+        }
+
+        // Optional 3D attach (Rigidbody can be null)
+        if (attachTo != null)
+        {
+            var rb = attachTo.GetComponent<Rigidbody>();
+            FMODUnity.RuntimeManager.AttachInstanceToGameObject(inst, attachTo, rb);
+        }
+
+        // Set parameter before start (so 0s transition regions see correct value)
+        if (!string.IsNullOrEmpty(paramName) && paramValue.HasValue)
+            inst.setParameterByName(paramName, paramValue.Value, ignoreSeekSpeed);
+
+        // Copy delegates to locals to avoid closure surprises
+        var _onMarker  = onMarker;
+        var _onBeat    = onBeat;
+        var _onStopped = onStopped;
+// Create the delegate and store it so GC can't collect it
+        EVENT_CALLBACK cb = (type, _inst, paramPtr) =>
+        {
+            // Local copies to guard against races
+            var cbMarker  = _onMarker;
+            var cbBeat    = _onBeat;
+            var cbStopped = _onStopped;
+
+            try
+            {
+                if ((type & EVENT_CALLBACK_TYPE.TIMELINE_BEAT) != 0 && cbBeat != null && paramPtr != IntPtr.Zero)
+                {
+                    var b = Marshal.PtrToStructure<FMOD.Studio.TIMELINE_BEAT_PROPERTIES>(paramPtr);
+                    cbBeat(b);
+                }
+                else if ((type & EVENT_CALLBACK_TYPE.TIMELINE_MARKER) != 0 && cbMarker != null && paramPtr != IntPtr.Zero)
+                {
+                    var p = Marshal.PtrToStructure<FMOD.Studio.TIMELINE_MARKER_PROPERTIES>(paramPtr);
+                    string marker = (string)p.name ?? string.Empty; // StringWrapper -> string
+                    cbMarker(marker, p.position);
+                }
+                else if ((type & EVENT_CALLBACK_TYPE.STOPPED) != 0)
+                {
+                    // Fire stop, then unpin the callback so it can be GC'd
+                    cbStopped?.Invoke();
+                    _markerCbs.Remove(inst);   // <-- drop strong ref
+                }
+                
+            }
+            catch { /* never throw on FMOD thread */ }
+
+            return FMOD.RESULT.OK;
+        };
+
+// Pin the delegate for this instance
+        _markerCbs[inst] = cb;
+        var mask = EVENT_CALLBACK_TYPE.TIMELINE_MARKER | EVENT_CALLBACK_TYPE.TIMELINE_BEAT | EVENT_CALLBACK_TYPE.STOPPED;
+        inst.setCallback(cb, mask);
+        // Start + release (release is safe; instance lives until STOPPED)
+        var startResult = inst.start();
+        Debug.Log($"[FMOD] start() → {startResult}");
+        if (startResult != FMOD.RESULT.OK)
+            Debug.LogError($"[FMODAudioManager] inst.start() failed: {startResult}");
+
+        inst.release();
+
+        return inst;
+    }
+
+    public void StopCurrent(bool allowFadeOut = true)
+    {
+        if (currentMusic.isValid())
+        {
+            currentMusic.stop(allowFadeOut ? STOP_MODE.ALLOWFADEOUT : STOP_MODE.IMMEDIATE);
+            currentMusic.release();
+            currentMusic = default;
+        }
+    }
     private IEnumerator TransitionToNewMusic(EventReference newEventName, float fadeDuration)
     {
         // Fade out current music
@@ -117,31 +175,7 @@ public class FMODAudioManager : MonoBehaviour
         currentMusic.setVolume(1f);
         currentMusic.start();
     }
-
-
-    private IEnumerator FadeOutAndReplace(EventInstance oldMusic, EventInstance newMusic, float duration)
-    {
-        float timer = 0f;
-        oldMusic.getVolume(out float startVolume);
-
-        while (timer < duration)
-        {
-            timer += Time.deltaTime;
-            float newVol = Mathf.Lerp(startVolume, 0, timer / duration);
-            oldMusic.setVolume(newVol);
-            yield return null;
-        }
-
-        oldMusic.stop(STOP_MODE.ALLOWFADEOUT);
-        oldMusic.release();
-
-        currentMusic = newMusic;
-        currentMusic.start();
-
-        currentFadeOut = null;
-        nextMusicToPlay.clearHandle();
-    }
-
+    
     public void PlayAmbient(EventReference eventName)
     {
         if (currentAmbient.isValid())
@@ -198,32 +232,13 @@ public class FMODAudioManager : MonoBehaviour
         Instance = this;
         DontDestroyOnLoad(this.gameObject);
     }
-
-    public AudioSource GetAudioSource()
-    {
-        if (audioSource == null)
-        {
-            audioSource = Camera.main.gameObject.GetComponent<AudioSource>();
-            if (audioSource == null)
-            {
-                UnityEngine.Debug.LogError("No audio source found!");
-            }
-        }
-        return audioSource;
-    }
-
+    
     public void SetDrums(int drumSet)
     {
         currentMusic.setParameterByName("CharacterDrumSelection", drumSet);
 
     }
-    /// <summary>
-    /// Plays a one-shot event, optionally setting a parameter before playback.
-    /// </summary>
-    /// <param name="eventPath">FMOD event path (e.g., "SFX/Cheer")</param>
-    /// <param name="paramName">Name of the parameter to set (optional)</param>
-    /// <param name="paramValue">Value to set the parameter to (ignored if paramName is null or empty)</param>
-    // PlayOneShot
+   
     public void PlayOneShot(EventReference evt, string paramName = null, float paramValue = 0f)
     {
         if (evt.IsNull) { Debug.LogWarning("[FMOD] PlayOneShot NULL"); return; }

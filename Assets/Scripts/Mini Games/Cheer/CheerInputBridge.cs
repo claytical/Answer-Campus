@@ -40,7 +40,6 @@ public class CheerInputBridge : MonoBehaviour
         Debug.Log($"[INPUT] {dir} at {timestamp:F3}");
     }
 
-// CheerInputBridge.cs
 
     public void DiscardBefore(double minTimestamp)
     {

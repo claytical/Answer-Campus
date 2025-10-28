@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<objects serializationModel="Studio.02.03.00">
+	<object class="AudioFile" id="{47fd5fed-5e4c-4ebd-b73a-149e75fe82ab}">
+		<property name="assetPath">
+			<value>LOC_105BPM_StudentCenter.wav</value>
+		</property>
+		<property name="isStreaming">
+			<value>true</value>
+		</property>
+		<property name="frequencyInKHz">
+			<value>48</value>
+		</property>
+		<property name="channelCount">
+			<value>2</value>
+		</property>
+		<property name="length">
+			<value>73.142854166666666</value>
+		</property>
+		<relationship name="masterAssetFolder">
+			<destination>{33fc172c-016a-4235-9242-e7ee3cd753a4}</destination>
+		</relationship>
+	</object>
+</objects>
