@@ -250,15 +250,13 @@ public class Calendar : MonoBehaviour
         if(StatsManager.Numbered_Stat_Exists("Week"))
         {
             week = (int)StatsManager.Get_Numbered_Stat("Week");
+            Debug.Log($"It's week {week}");
+
             if (week <= 1)
             {
+                Debug.Log("No football schedule found, generating...");
                 FootballScheduler.GenerateSchedule();
             }
-        }
-        else
-        {
-            FootballScheduler.GenerateSchedule();
-            week = 1;
         }
 
         isDay = !CharacterProgressHelper.IsNight();
@@ -384,10 +382,4 @@ public class Calendar : MonoBehaviour
         finalReport.SetActive(true);
     }
     
-
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
 }

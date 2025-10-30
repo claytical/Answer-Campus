@@ -270,8 +270,8 @@ public class CheerGameManager : MonoBehaviour
 
     void Start()
     {
-        int currentWeek = (int)StatsManager.Get_Numbered_Stat("Week");
-        FootballGame game = FootballScheduler.GetThisWeeksGame(currentWeek);
+        weekNumber = (int)StatsManager.Get_Numbered_Stat("Week");
+        FootballGame game = FootballScheduler.GetThisWeeksGame(weekNumber);
         FMODAudioManager.Instance.PlayMusic(crowd);
         
         if (game != null && game.isHome && !game.played)
@@ -724,8 +724,6 @@ private void FinalizeQuarterScore(int totalCombos, int combosMade)
     {
         Debug.Log("Game Over - Final Routine Placeholder");
         RecordGameResult(weekNumber, won);
-        weekNumber++;
-        StatsManager.Set_Numbered_Stat("Week", weekNumber);
         SceneManager.LoadScene("Post Game");
     }
 

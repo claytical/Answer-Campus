@@ -59,7 +59,6 @@ public override void Run_Node()
         {
             if (route.character == loc.character && route.stage == stage)
             {
-                Debug.Log($"Routing {loc.character} at stage {stage} to conversation: {route.conversation.name}");
 
                 if (currentWeek < route.unlockWeek)
                 {

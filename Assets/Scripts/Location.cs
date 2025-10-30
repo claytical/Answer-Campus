@@ -47,9 +47,7 @@ public class Location : MonoBehaviour
     }
     public void GoToLocation()
     {
-        int currentWeek = (int)StatsManager.Get_Numbered_Stat("Week");
-        currentWeek++;
-        StatsManager.Set_Numbered_Stat("Week", currentWeek);
+
         List<CharacterLocation> characterLocations = PlayerPrefsExtra.GetList<CharacterLocation>("characterLocations", new List<CharacterLocation>());
         PlayerPrefsExtra.SetList<CharacterLocation>("characterLocations", characterLocations);
 
