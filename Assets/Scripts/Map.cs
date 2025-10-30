@@ -1,9 +1,7 @@
-using System;
-using System.Collections;
+using System;                // for Array.Find/Exists
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
-using UnityEngine.SceneManagement;
 using VNEngine;
 
 public class Map : MonoBehaviour
@@ -12,62 +10,80 @@ public class Map : MonoBehaviour
     private List<CharacterLocation> characterLocations;
     public Characters characters;
     public Location footballGame;
-    // Start is called before the first frame update
+
+    [Header("Conversation Availability")]
+    public List<StageRouteIndex> npcRouteIndices = new(); // ← list, not single
+    public bool requireFriendToTrack = false;              // Sentinel gate
+
     void Start()
     {
-        // Step 3: Enable football location if there's a home game this week
+        // 0) Football toggle for this week
         int currentWeek = (int)StatsManager.Get_Numbered_Stat("Week");
         var thisWeeksGame = FootballScheduler.GetThisWeeksGame(currentWeek);
+        footballGame.GetComponent<Button>().interactable =
+            (thisWeeksGame != null && thisWeeksGame.isHome && !thisWeeksGame.played);
 
-        if (thisWeeksGame != null && thisWeeksGame.isHome && !thisWeeksGame.played)
-        {
-            footballGame.GetComponent<Button>().interactable = true;
-            Debug.Log($"Football game this week vs. {thisWeeksGame.opponent.schoolName} ({thisWeeksGame.opponent.mascot}) — location unlocked.");
-        }
-        else
-        {
-            footballGame.GetComponent<Button>().interactable = false;
-        }
-
+        // 1) Load presence and cache all scene Locations (include inactive)
         characterLocations = PlayerPrefsExtra.GetList<CharacterLocation>("characterLocations", new List<CharacterLocation>());
-        var allLocations = GetComponentsInChildren<Location>();
+        var allLocations = GetComponentsInChildren<Location>(true);
 
-        // Step 1: Lock all lockable locations by default
+        // 2) Lock all lockable locations; hide portraits & badges
         foreach (var location in lockableLocations)
         {
-            location.GetComponent<Button>().interactable = false;
-            location.characterWaiting.gameObject.SetActive(false);
+            if (location == null) continue;
+            var btn = location.GetComponent<Button>();
+            if (btn) btn.interactable = false;
+
+            if (location.characterWaiting) location.characterWaiting.gameObject.SetActive(false);
+
+            var badge = location.transform.Find("AvailableBadge");
+            if (badge) badge.gameObject.SetActive(false);
         }
 
-        // Step 2: Place character images and unlock matching locations
-        foreach (var characterLocation in characterLocations)
+        // 3) Place portraits for characters who are present, and unlock those locations
+        foreach (var cl in characterLocations)
         {
-            // Find matching profile for the character
-            var profile = Array.Find(characters.profiles, p => p.character == characterLocation.character);
-            if (profile.picture == null) continue; // skip if no picture found
+            var profile = Array.Find(characters.profiles, p => p.character == cl.character);
+            if (profile.picture == null) continue;
 
-            foreach (var location in allLocations)
+            // Match either by scene (preferred) or by GO name
+            foreach (var loc in allLocations)
             {
-                // Match either by scene or name (support both use cases)
-                if (location.scene == characterLocation.location || location.name == characterLocation.location)
+                if (loc == null) continue;
+                if (loc.scene == cl.location || loc.name == cl.location)
                 {
-                    location.characterWaiting.sprite = profile.picture;
-                    location.characterWaiting.gameObject.SetActive(true);
-
-                    // If this location is lockable, unlock it
-                    if (Array.Exists(lockableLocations, l => l == location))
+                    // Show portrait for presence (independent of availability)
+                    if (loc.characterWaiting)
                     {
-                        location.GetComponent<Button>().interactable = true;
-                        Debug.Log($"Unlocked Location {location.name} with character {profile.character}.");
+                        loc.characterWaiting.sprite = profile.picture;
+                        loc.characterWaiting.gameObject.SetActive(true);
                     }
 
-                    break; // match found, no need to check other locations
+                    // Unlock if this Location is in the lockable set
+                    if (Array.Exists(lockableLocations, l => l == loc))
+                    {
+                        var btn = loc.GetComponent<Button>();
+                        if (btn) btn.interactable = true;
+                        Debug.Log($"Unlocked Location {loc.name} with character {profile.character}.");
+                    }
+
+                    break; // matched a scene Location
                 }
             }
         }
 
+        // 4) Compute availability ONCE across all NPCs, then light badges on the matching scene Locations
+        var available = CharacterProgressHelper.GetAvailableNow(npcRouteIndices, characterLocations, requireFriendToTrack);
+        foreach (var a in available)
+        {
+            // a.location is LocationData — get the actual scene Location instance
+            var locInstance = LocationRegistry.Get(a.location);
+            if (locInstance == null) continue;
+
+            var badge = locInstance.transform.Find("AvailableBadge");
+            if (badge) badge.gameObject.SetActive(true);
+
+            Debug.Log($"[Map] Conversation AVAILABLE: {a.character} at {locInstance.scene} (Stage {a.stage}, unlock {a.unlockWeek})");
+        }
     }
-
-
-    
 }

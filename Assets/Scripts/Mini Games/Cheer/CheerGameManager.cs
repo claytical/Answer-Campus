@@ -159,6 +159,8 @@ public struct CheerLeader
     public Cheer cheer;         // The cheerleader (pose logic)
     public Image glyphA;        // Left directional arrow
     public Image glyphB;        // Right directional arrow
+    public CountdownBar countdownBar;
+
 }
 
 [Serializable]
@@ -180,7 +182,6 @@ public class CheerGameManager : MonoBehaviour
     public EventReference crowd;
     public EventReference countdownEvent;
     public EventReference gameEvent;
-    
     public AudioClip introClip;
     public TextMeshProUGUI homeScoreText;
     public TextMeshProUGUI awayScoreText;
@@ -250,6 +251,7 @@ public class CheerGameManager : MonoBehaviour
     private readonly ConcurrentQueue<double> _cueQueue = new();
     private double _baseDSP; // aligns FMOD timeline ms to Unity DSP seconds
     private FMOD.Studio.EventInstance _activeCheer;
+    
     int home, away;
     private static readonly Dictionary<CheerCombo, CheerDirection[]> comboMap = new()
     {
@@ -271,7 +273,6 @@ public class CheerGameManager : MonoBehaviour
         int currentWeek = (int)StatsManager.Get_Numbered_Stat("Week");
         FootballGame game = FootballScheduler.GetThisWeeksGame(currentWeek);
         FMODAudioManager.Instance.PlayMusic(crowd);
-
         
         if (game != null && game.isHome && !game.played)
         {
@@ -323,6 +324,7 @@ public class CheerGameManager : MonoBehaviour
         for (int i =0; i < matchSequences.Count; i++)
         {
             ResetGlyphTintAndHide(i);
+            matchSequences[i].cheerleader.countdownBar?.Cancel();
         }
         spotlight?.gameObject.SetActive(false);
         // clear input buffers
@@ -435,6 +437,7 @@ public class CheerGameManager : MonoBehaviour
     MoveSpotlight(leaderIdx); // both exist already
     var leader = matchSequences[leaderIdx].cheerleader;
     var leaderCheer = matchSequences[leaderIdx].cheerleader.cheer;
+    leader.countdownBar?.StartWindow(inputWindowSeconds);
     // STEP 1: Direction
     var dirA = RandomDir();
     var dirB = RandomDirNot(dirA);
@@ -467,12 +470,14 @@ public class CheerGameManager : MonoBehaviour
         if (leaderCheer) leaderCheer.SetCombo(PoseForDir(dirA));
         amplification += amplificationPerSuccess; // your crowd amp
         combosMade++;                             // your scoring
+        leader.countdownBar?.CompleteSuccess();
         yield return new WaitForSecondsRealtime(fadeAfterSuccess);
     }
     else
     {
         // set fail-colored version of the same dir
         SetGlyphSpriteAndColor(leaderIdx, true, dirA, failColor);
+        leader.countdownBar?.CompleteFail();
         yield return new WaitForSecondsRealtime(fadeAfterFail);
     }
 
@@ -503,11 +508,14 @@ public class CheerGameManager : MonoBehaviour
         if (leaderCheer) leaderCheer.SetCombo(PoseForDir(dirB));
         amplification += amplificationPerSuccess;
         combosMade++;
+        leader.countdownBar?.CompleteSuccess();
         yield return new WaitForSecondsRealtime(fadeAfterSuccess);
     }
     else
     {
         SetGlyphSpriteAndColor(leaderIdx, false, dirB, failColor);
+        leader.countdownBar?.CompleteFail();
+
         if (leaderCheer) leaderCheer.SetCombo(CheerCombo.Default);
         yield return new WaitForSecondsRealtime(fadeAfterFail);
     }

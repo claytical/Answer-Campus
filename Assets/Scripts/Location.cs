@@ -5,7 +5,27 @@ using System;
 using UnityEngine.SceneManagement;
 using VNEngine;
 using UnityEngine.UI;
+public static class LocationRegistry
+{
+    private static readonly Dictionary<LocationData, Location> _byData = new();
 
+    public static void Register(Location loc)
+    {
+        if (loc != null && loc.data != null) _byData[loc.data] = loc;
+    }
+
+    public static void Unregister(Location loc)
+    {
+        if (loc != null && loc.data != null && _byData.TryGetValue(loc.data, out var cur) && cur == loc)
+            _byData.Remove(loc.data);
+    }
+
+    public static Location Get(LocationData data)
+    {
+        _byData.TryGetValue(data, out var loc);
+        return loc;
+    }
+}
 public class Location : MonoBehaviour
 {
     public string scene;
@@ -14,9 +34,16 @@ public class Location : MonoBehaviour
     public int minutes;
     public bool played = false;
     public Image characterWaiting;
+    public LocationData data;   // ← assign in Inspector
 
-    private void Start()
+    void Awake()
     {
+        LocationRegistry.Register(this);
+    }
+
+    void OnDestroy()
+    {
+        LocationRegistry.Unregister(this);
     }
     public void GoToLocation()
     {

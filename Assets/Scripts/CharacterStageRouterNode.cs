@@ -13,6 +13,7 @@ namespace VNEngine
         {
             public Character character; // Exact match, e.g., "Breanna"
             public int stage;
+            [Min(0)] public int unlockWeek = 0;
             public ConversationManager conversation;
         }
 
@@ -30,15 +31,9 @@ public override void Run_Node()
     if (FMODAudioManager.Instance != null)
     {
 
-        if (!musicFMODEventName.IsNull)
-        {
-            FMODAudioManager.Instance.PlayMusic(musicFMODEventName);
-        }
+        if (!musicFMODEventName.IsNull) { FMODAudioManager.Instance.PlayMusic(musicFMODEventName); }
 
-        if (!ambientFMODEventName.IsNull)
-        {
-            FMODAudioManager.Instance.PlayAmbient(ambientFMODEventName);
-        }
+        if (!ambientFMODEventName.IsNull) { FMODAudioManager.Instance.PlayAmbient(ambientFMODEventName); }
     }
 
     List<CharacterLocation> characterLocations = PlayerPrefsExtra.GetList<CharacterLocation>("characterLocations", new List<CharacterLocation>());
@@ -59,14 +54,24 @@ public override void Run_Node()
         var loc = selected.Value;
         string statKey = $"{loc.character} - {currentSceneName} - Stage";
         float stage = StatsManager.Get_Numbered_Stat(statKey);
-
+        int currentWeek = Mathf.RoundToInt(StatsManager.Get_Numbered_Stat("Week"));
         foreach (StageConversation route in routes)
         {
             if (route.character == loc.character && route.stage == stage)
             {
                 Debug.Log($"Routing {loc.character} at stage {stage} to conversation: {route.conversation.name}");
 
-           
+                if (currentWeek < route.unlockWeek)
+                {
+                    Debug.Log(
+                        $"[Router] Matched {loc.character} stage {stage}, " +
+                        $"but locked until week {route.unlockWeek}. Current week: {currentWeek}. " +
+                        $"Falling through to fallbacks.");
+                    break; // do NOT start this conversation yet; try fallbacks below
+                }
+
+                Debug.Log($"Routing {loc.character} at stage {stage} (unlockWeek {route.unlockWeek}) to: {route.conversation.name}");
+
                 // Set the parameter dynamically
                 if (loc.character == Character.CHARLI)
                     FMODAudioManager.Instance.SetDrums(0);

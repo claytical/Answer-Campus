@@ -13,6 +13,7 @@ namespace VNEngine
         public Character character;         // e.g., "Breanna"
         public string scene;             // e.g., "Library"
         public int stage = -1;           // e.g., 2 sets to "Breanna - Library - Stage" = 2
+        public bool skipWeeks = false;
 
         public override void Run_Node()
         {
@@ -28,11 +29,14 @@ namespace VNEngine
             Debug.Log($"[Checkpoint] Added {character} to {scene} in characterLocations");
 
             // Conditionally advance the week
-            float currentWeek = StatsManager.Get_Numbered_Stat("Week");
-            if (currentWeek < week)
+            if (skipWeeks)
             {
-                StatsManager.Set_Numbered_Stat("Week", week);
-                Debug.Log($"[Checkpoint] Advanced week to {week}");
+                float currentWeek = StatsManager.Get_Numbered_Stat("Week");
+                if (currentWeek < week)
+                {
+                    StatsManager.Set_Numbered_Stat("Week", week);
+                    Debug.Log($"[Checkpoint] Advanced week to {week}");
+                }
             }
 
             Finish_Node();

@@ -227,42 +227,6 @@ public class Calendar : MonoBehaviour
 
     private bool isDay = true;
     // Start is called before the first frame update
-
-    public void ToggleDaytime()
-    {
-        isDay = !isDay;
-        if (isDay)
-        {
-            for (int i = 0; i < timeImages.Length; i++)
-            {
-                if (timeImages[i].uiImage != null)
-                {
-                    timeImages[i].uiImage.sprite = timeImages[i].spriteDay;
-                }
-
-                if (timeImages[i].image != null)
-                {
-                    timeImages[0].image.sprite = timeImages[i].spriteDay;
-                }
-            }
-        }
-        else
-        {
-            for (int i = 0; i < timeImages.Length; i++)
-            {
-
-                if (timeImages[i].uiImage != null)
-                {
-                    timeImages[i].uiImage.sprite = timeImages[i].spriteNight;
-                }
-
-                if (timeImages[i].image != null)
-                {
-                    timeImages[i].image.sprite = timeImages[i].spriteNight;
-                }
-            }
-        }
-    }
     
     void Start()
     {
@@ -296,6 +260,9 @@ public class Calendar : MonoBehaviour
             FootballScheduler.GenerateSchedule();
             week = 1;
         }
+
+        isDay = !CharacterProgressHelper.IsNight();
+        ApplyTimeOfDayVisuals();
         string json = StatsManager.Get_String_Stat("FootballSchedule");
         Debug.Log($"[Schedule JSON] {json}");
         month.text = SemesterHelper.GetMonthForWeek(week);
@@ -314,10 +281,31 @@ public class Calendar : MonoBehaviour
         {
             finalExamLocation.GoToLocation();
         }
+        foreach (var evt in GameEvents.GetWeekPreview(week))
+            Debug.Log($"[Calendar Preview] Week {evt.week}: {evt.type} - {evt.label} @ {evt.location}");
 
         if (week >= SemesterHelper.FinalsWeek + 1)
         {
             EndSemester();
+        }
+    }
+    public void ToggleDaytime()
+    {
+        isDay = !isDay;
+        CharacterProgressHelper.SetNight(!isDay);
+        ApplyTimeOfDayVisuals();
+    }
+
+    public static List<EventInfo> GetPreviewForWeek(int week) => GameEvents.GetWeekPreview(week);
+    private void ApplyTimeOfDayVisuals()
+    {
+        for (int i = 0; i < timeImages.Length; i++)
+        {
+            if (timeImages[i].uiImage != null)
+                timeImages[i].uiImage.sprite = isDay ? timeImages[i].spriteDay : timeImages[i].spriteNight;
+
+            if (timeImages[i].image != null)
+                timeImages[i].image.sprite = isDay ? timeImages[i].spriteDay : timeImages[i].spriteNight;
         }
     }
 
