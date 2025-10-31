@@ -28,7 +28,7 @@ namespace VNEngine
         public override void Run_Node()
         {
             int currentWeek = (int)StatsManager.Get_Numbered_Stat("Week");
-
+            bool routed = false;
             Debug.Log($"[ClassroomRouterNode] Week: {currentWeek}");
 
             // 1) Hard week overrides that DO NOT mutate stage
@@ -36,7 +36,7 @@ namespace VNEngine
             {
                 Debug.Log("Routing to final exam (week-gated).");
                 finalConversation.Start_Conversation();
-                Finish_Node();
+                routed = true;
                 return;
             }
 
@@ -44,10 +44,11 @@ namespace VNEngine
             {
                 Debug.Log("Routing to midterm (week-gated).");
                 midtermConversation.Start_Conversation();
-                Finish_Node();
+                routed = true;
                 return;
             }
 
+            go_to_next_node = !routed;
             Finish_Node();
 
         }

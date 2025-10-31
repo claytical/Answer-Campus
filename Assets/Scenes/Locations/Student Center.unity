@@ -19764,7 +19764,7 @@ MonoBehaviour:
   go_to_next_node: 1
   executed_from_load: 0
   level_to_load: Home
-  async_loading: 0
+  async_loading: 1
 --- !u!1 &728226127
 GameObject:
   m_ObjectHideFlags: 0

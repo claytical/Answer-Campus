@@ -23,45 +23,33 @@ namespace VNEngine
             Time.timeScale = 1;
 
             if (!async_loading)
-//                UnityEngine.SceneManagement.SceneManager.LoadScene(level_to_load);
-                UnityEngine.SceneManagement.SceneManager.LoadScene(autoSaveScene);
-
-                    else
-                        StartCoroutine(Async_Load_Level());
+            {
+                SceneManager.LoadScene(level_to_load, LoadSceneMode.Single);
+            }
+            else
+            {
+                StartCoroutine(Async_Load_Level(level_to_load));
+            }
         }
 
 
-        IEnumerator Async_Load_Level()
+        IEnumerator Async_Load_Level(string target)
         {
             UIManager.ui_manager.loading_icon.SetActive(true);
             UIManager.ui_manager.loading_text.gameObject.SetActive(true);
-            string active_scene = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
-            DestroyImmediate(UnityEngine.EventSystems.EventSystem.current.gameObject);
-
-            //            AsyncOperation AO = UnityEngine.SceneManagement.SceneManager.LoadSceneAsync(level_to_load, UnityEngine.SceneManagement.LoadSceneMode.Additive);
-            AsyncOperation AO = UnityEngine.SceneManagement.SceneManager.LoadSceneAsync(autoSaveScene, UnityEngine.SceneManagement.LoadSceneMode.Additive);
+            string active_scene = SceneManager.GetActiveScene().name;
+            AsyncOperation AO = SceneManager.LoadSceneAsync(target, LoadSceneMode.Additive);
             AO.allowSceneActivation = false;
             int progress = (int)(AO.progress * 100f);
-            while (AO.progress < 0.9f)
+            while (!AO.isDone)
             {
                 progress = Mathf.Max(progress, (int)(AO.progress * 100f));
                 UIManager.ui_manager.loading_text.text = "Loading... " + progress + "%";
                 yield return null;
             }
             AO.allowSceneActivation = true;
-            while (AO.progress < 1f)
-            {
-                progress = Mathf.Max(progress, (int)(AO.progress * 100f));
-                UIManager.ui_manager.loading_text.text = "Loading... " + progress + "%";
-                yield return null;
-            }
-
-            yield return 0;
-
             UIManager.ui_manager.loading_icon.SetActive(false);
             UIManager.ui_manager.loading_text.gameObject.SetActive(false);
-
-            UnityEngine.SceneManagement.SceneManager.UnloadSceneAsync(active_scene);
             Debug.Log("Done Async loading & switching to level: " + autoSaveScene);
         }
 
