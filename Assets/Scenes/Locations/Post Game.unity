@@ -505,11 +505,11 @@ MonoBehaviour:
     threshold: 0
   successDeltas: []
   successConversation: {fileID: 3107574536009901843}
-  successLogMessage: 
-  continueCurrentOnSuccess: 0
+  successLogMessage: Winning season
+  continueCurrentOnSuccess: 1
   failureDeltas: []
   failureConversation: {fileID: 3419364711449659067}
-  failureLogMessage: 
+  failureLogMessage: Losing season
   continueCurrentOnFailure: 1
 --- !u!1 &424667415
 GameObject:
@@ -701,10 +701,10 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
+  - {fileID: 65380954}
   - {fileID: 3480533476971339681}
   - {fileID: 860254026088301585}
   - {fileID: 282285651}
-  - {fileID: 65380954}
   - {fileID: 939964500}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -2123,7 +2123,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1611349575936783945, guid: 0991620b818a844c8872842d42ccce09, type: 3}
       propertyPath: routes.Array.data[0].stage
-      value: 2
+      value: 3
       objectReference: {fileID: 0}
     - target: {fileID: 1611349575936783945, guid: 0991620b818a844c8872842d42ccce09, type: 3}
       propertyPath: routes.Array.data[1].stage
