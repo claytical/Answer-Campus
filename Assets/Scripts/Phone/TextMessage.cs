@@ -1,12 +1,22 @@
 using System;
+using System.Collections.Generic;
 
-[System.Serializable]
+[Serializable]
+public class QuickReply
+{
+    public string label;       // e.g., "Sounds good, see u there!"
+    public string iconKey;     // e.g., "thumbs_up"  (map to sprite/emoji in UI)
+    public string payload;     // optional: use if you need branching keys, stat deltas, etc.
+}
+[Serializable]
 public class TextMessage : System.IEquatable<TextMessage>
 {
-    public Character from;        // Who sent the message (Character.NONE for player)
-    public string message;        // The content of the message
-    public string location;       // Where the message was sent or refers to
-
+    public Character from;
+    public string body;   
+    public long unixTime;
+    public bool isPlayer;
+    public string location;
+    public List<QuickReply> quickReplies; 
     public TextMessage positiveResponseBranch; // The single follow-up message if the player responds positively
     public TextMessage negativeResponseBranch; // The single follow-up message if the player responds negatively
 
@@ -14,7 +24,7 @@ public class TextMessage : System.IEquatable<TextMessage>
     public TextMessage(Character from, string message, string location)
     {
         this.from = from;
-        this.message = message;
+        this.body = message;
         this.location = location;
     }
 
@@ -27,7 +37,7 @@ public class TextMessage : System.IEquatable<TextMessage>
     // Equality checks for TextMessage
     public bool Equals(TextMessage other)
     {
-        return from == other.from && message == other.message && location == other.location;
+        return from == other.from && body == other.body && location == other.location;
     }
 
     public override bool Equals(object obj)
@@ -44,7 +54,7 @@ public class TextMessage : System.IEquatable<TextMessage>
         {
             int hash = 17;
             hash = hash * 23 + from.GetHashCode();
-            hash = hash * 23 + (message?.GetHashCode() ?? 0);
+            hash = hash * 23 + (body?.GetHashCode() ?? 0);
             hash = hash * 23 + (location?.GetHashCode() ?? 0);
             return hash;
         }

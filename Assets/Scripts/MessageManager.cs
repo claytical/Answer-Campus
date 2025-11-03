@@ -32,7 +32,7 @@ public class MessageManager : MonoBehaviour
         }
 
         friendConversations[friendName].Add(message);
-        StatsManager.Set_String_Stat(friendName + "_message_" + friendConversations[friendName].Count, message.message); // Persist in StatsManager
+        StatsManager.Set_String_Stat(friendName + "_message_" + friendConversations[friendName].Count, message.body); // Persist in StatsManager
     }
 
     // Get all messages from a specific friend

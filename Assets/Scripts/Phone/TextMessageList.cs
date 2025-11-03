@@ -16,7 +16,54 @@ public struct ProfilePicture
     public Sprite polaroid;
 
 }
+public static class TextThreads
+{
+    const string Key = "messages";
 
+    public static List<TextMessage> GetAll()
+        => PlayerPrefsExtra.GetList<TextMessage>(Key, new List<TextMessage>());
+
+    public static void SaveAll(List<TextMessage> all)
+    {
+        PlayerPrefsExtra.SetList(Key, all);
+        PlayerPrefs.Save();
+    }
+
+    public static List<TextMessage> GetThread(Character other)
+    {
+        var all = GetAll();
+        // thread = msgs from NPC 'other' or from player to 'other'
+        return all
+            .Where(m => (m.from == other && !m.isPlayer) || (m.isPlayer && m.from == other))
+            .OrderBy(m => m.unixTime)
+            .ToList();
+    }
+
+
+    public static void SendPlayerResponse(Character to, QuickReply reply)
+    {
+        var all = GetAll();
+
+        // Player bubble uses the reply label as the outgoing text.
+        var playerMsg = new TextMessage(to, reply.label, location: null);
+        playerMsg.unixTime = Now();
+        playerMsg.isPlayer = true;
+        playerMsg.quickReplies = null;
+
+        all.Add(playerMsg);
+
+        // Clear quick replies on the most recent NPC message for this thread.
+        var lastNpcMsg = all.LastOrDefault(m => !m.isPlayer && m.from == to && m.quickReplies != null && m.quickReplies.Count > 0);
+        if (lastNpcMsg != null) lastNpcMsg.quickReplies = null;
+
+        SaveAll(all);
+
+        // Optional: branch on reply.payload here
+        // VNEngine.StatsManager.Set_Boolean_Stat($"Replied_{to}_{reply.payload}", true);
+    }
+    
+    static long Now() => DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+}
 public class TextMessageList : MonoBehaviour
 {
     public GameObject listItemTemplate;
@@ -98,7 +145,7 @@ public class TextMessageList : MonoBehaviour
             }
 
             // Create multiple message items (split by sentences)
-            string[] sentences = Regex.Split(messages[i].message, @"(?<=[\.!\?])\s+");
+            string[] sentences = Regex.Split(messages[i].body, @"(?<=[\.!\?])\s+");
             Debug.Log("FOUND " + sentences.Length + " SENTENCES.");
             for (int j = 0; j < sentences.Length; j++)
             {

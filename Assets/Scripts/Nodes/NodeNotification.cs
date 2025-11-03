@@ -14,7 +14,7 @@ namespace VNEngine
         public override void Run_Node()
         {
             phone.gameObject.SetActive(true);
-            phone.Notify(notifications);
+//            phone.Notify(notifications);
 
             // if there's no need to  wait for other operations/coroutines, call finish node at the end of this method
             Finish_Node();
