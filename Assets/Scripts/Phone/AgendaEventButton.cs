@@ -8,6 +8,7 @@ public class AgendaEventButton : MonoBehaviour
 {
     [Header("UI")]
     public Button button;              // root button on the prefab
+    public Image icon;
     public TMP_Text titleText;         // main label (uses EventInfo.label)
     public TMP_Text timeText;          // secondary label (e.g., "Week 6")
 
@@ -17,13 +18,24 @@ public class AgendaEventButton : MonoBehaviour
     public int maxAttendeeChips = 6;
 
     public void Bind(
-        string title,
-        string timeLabel,
+        string title, EventType eventType,
         List<Character> attendees,
         Action onClick)
     {
         if (titleText) titleText.text = title ?? "";
-        if (timeText)  timeText.text  = timeLabel ?? "";
+        switch (eventType)
+        {
+            case EventType.FootballHomeGame:
+                break;
+            case EventType.Custom:
+                break;
+            case EventType.Finals:
+                break;
+            case EventType.Midterms:
+//                if(icon) icon.sprite = ;
+                break;
+        }
+        //        if (timeText)  timeText.text  = timeLabel ?? "";
 
         // Attendees (optional)
         if (attendeesRoot && attendeeChipPrefab)

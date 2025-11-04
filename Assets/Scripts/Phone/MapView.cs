@@ -45,7 +45,7 @@ public class MapView : MonoBehaviour
                 Debug.LogError("LocationButton component missing on locationButtonPrefab.");
                 continue;
             }
-
+Debug.Log($"Location Name: {locationName}");
             lb.Bind(locationName, friends, () =>
             {
                 onLocationSelected?.Invoke(locationName);

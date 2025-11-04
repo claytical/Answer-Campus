@@ -9,6 +9,7 @@ public class CustomEvent
     public string id;          // stable key
     public string name;        // e.g., "Art Show Opening"
     public int week;           // absolute week number
+    public Sprite icon;
     public string location;    // scene name
     public bool unlocked;      // set true when a convo unlocks it
 }
@@ -17,13 +18,14 @@ public class CustomEvent
 class CustomEventList { public List<CustomEvent> items = new(); }
 
 public enum EventType { Midterms, Finals, FootballHomeGame, Custom }
-
+[Serializable]
 public struct EventInfo
 {
     public EventType type;
     public string label;     // display label
     public int week;
     public string location;  // may be null
+    public Sprite icon;
 }
 
 public static class GameEvents
@@ -71,7 +73,7 @@ public static class GameEvents
         {
             outList.Add(new EventInfo {
                 type = EventType.FootballHomeGame,
-                label = $"Home Game vs. {game.opponent.schoolName} {game.opponent.mascot}",
+                label = $"{game.opponent.schoolName} {game.opponent.mascot}",
                 week = week,
                 location = "FootballStadium"
             });
@@ -86,7 +88,8 @@ public static class GameEvents
                     type = EventType.Custom,
                     label = ev.name,
                     week = ev.week,
-                    location = ev.location
+                    location = ev.location,
+                    icon = ev.icon
                 });
             }
         }

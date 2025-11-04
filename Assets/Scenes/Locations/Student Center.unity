@@ -19764,7 +19764,7 @@ MonoBehaviour:
   go_to_next_node: 1
   executed_from_load: 0
   level_to_load: Home
-  async_loading: 1
+  async_loading: 0
 --- !u!1 &728226127
 GameObject:
   m_ObjectHideFlags: 0
@@ -33961,6 +33961,10 @@ PrefabInstance:
     m_TransformParent: {fileID: 1838532533}
     m_Modifications:
     - target: {fileID: -5143952188114400212, guid: 0f3abc4b5d99b424eb1a504fb2b92c1b, type: 3}
+      propertyPath: textMessage.body
+      value: Come meet some friends!
+      objectReference: {fileID: 0}
+    - target: {fileID: -5143952188114400212, guid: 0f3abc4b5d99b424eb1a504fb2b92c1b, type: 3}
       propertyPath: textMessage.from
       value: 1
       objectReference: {fileID: 0}
@@ -33973,8 +33977,36 @@ PrefabInstance:
       value: Apartment
       objectReference: {fileID: 0}
     - target: {fileID: -5143952188114400212, guid: 0f3abc4b5d99b424eb1a504fb2b92c1b, type: 3}
+      propertyPath: textMessage.quickReplies.Array.size
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: -5143952188114400212, guid: 0f3abc4b5d99b424eb1a504fb2b92c1b, type: 3}
+      propertyPath: textMessage.quickReplies.Array.data[0].label
+      value: OK
+      objectReference: {fileID: 0}
+    - target: {fileID: -5143952188114400212, guid: 0f3abc4b5d99b424eb1a504fb2b92c1b, type: 3}
+      propertyPath: textMessage.quickReplies.Array.data[1].label
+      value: NO
+      objectReference: {fileID: 0}
+    - target: {fileID: -5143952188114400212, guid: 0f3abc4b5d99b424eb1a504fb2b92c1b, type: 3}
       propertyPath: textMessage.positiveResponseBranch.Array.size
       value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: -5143952188114400212, guid: 0f3abc4b5d99b424eb1a504fb2b92c1b, type: 3}
+      propertyPath: textMessage.quickReplies.Array.data[0].iconKey
+      value: thumbsup
+      objectReference: {fileID: 0}
+    - target: {fileID: -5143952188114400212, guid: 0f3abc4b5d99b424eb1a504fb2b92c1b, type: 3}
+      propertyPath: textMessage.quickReplies.Array.data[0].payload
+      value: See you there
+      objectReference: {fileID: 0}
+    - target: {fileID: -5143952188114400212, guid: 0f3abc4b5d99b424eb1a504fb2b92c1b, type: 3}
+      propertyPath: textMessage.quickReplies.Array.data[1].iconKey
+      value: thumbsdown
+      objectReference: {fileID: 0}
+    - target: {fileID: -5143952188114400212, guid: 0f3abc4b5d99b424eb1a504fb2b92c1b, type: 3}
+      propertyPath: textMessage.quickReplies.Array.data[1].payload
+      value: Maybe later
       objectReference: {fileID: 0}
     - target: {fileID: 5932124337953696973, guid: 0f3abc4b5d99b424eb1a504fb2b92c1b, type: 3}
       propertyPath: m_RootOrder

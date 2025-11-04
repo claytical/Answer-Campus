@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1 &141046
+--- !u!1 &932899738185650747
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -8,50 +8,46 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 450854}
-  - component: {fileID: 2768142938567715423}
+  - component: {fileID: 2791172980301604336}
+  - component: {fileID: -1912529374127074432}
   m_Layer: 0
-  m_Name: Enter Multiple Actors
+  m_Name: Unlock Event
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &450854
+--- !u!4 &2791172980301604336
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 141046}
+  m_GameObject: {fileID: 932899738185650747}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 192.52957, y: 118.55607, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &2768142938567715423
+--- !u!114 &-1912529374127074432
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 141046}
+  m_GameObject: {fileID: 932899738185650747}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d074ede40ca19ea4fa7af3c653830ec5, type: 3}
+  m_Script: {fileID: 11500000, guid: 43443057b0a654feca56c640dd16364b, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: 
+  m_EditorClassIdentifier: Assembly-CSharp::VNEngine.NodeEvent
   go_to_next_node: 1
   executed_from_load: 0
-  actor_name:
-  - 
-  - 
-  actor_name_from: 0
-  entrance_type: 0
-  fade_in_time: 1
-  destination: 
-  custom_position:
-  - {fileID: 0}
+  EventInfo:
+    type: 3
+    label: 
+    week: 0
+    location: 
