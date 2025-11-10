@@ -11,15 +11,19 @@ namespace VNEngine
         public Character character;
         public string locationScene;
 
-        // Called initially when the node is run, put most of your logic here
         public override void Run_Node()
         {
-            List<CharacterLocation> characterLocations = PlayerPrefsExtra.GetList<CharacterLocation>("characterLocations", new List<CharacterLocation>());
-            characterLocations.RemoveAll(cl => cl.character == character && cl.location == locationScene);
-            PlayerPrefsExtra.SetList("characterLocations", characterLocations);
+            var pins = PlayerPrefsExtra.GetList<CharacterLocation>("characterLocations", new List<CharacterLocation>());
+            int removed = pins.RemoveAll(p =>
+                (character == null || EqualityComparer<Character>.Default.Equals(p.character, character)) &&
+                (string.IsNullOrWhiteSpace(locationScene) || string.Equals(p.location, locationScene, System.StringComparison.Ordinal)));
+
+            PlayerPrefsExtra.SetList("characterLocations", pins);
+            PlayerPrefs.Save();
+
+            if (removed > 0) Debug.Log($"[NodeMapRemove] Cleared {removed} pin(s).");
             Finish_Node();
         }
-
 
         // What happens when the user clicks on the dialogue text or presses spacebar? Either nothing should happen, or you call Finish_Node to move onto the next node
         public override void Button_Pressed()

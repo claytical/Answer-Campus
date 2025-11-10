@@ -16,6 +16,23 @@ public class LocationButton : MonoBehaviour
 
     [Header("Display")]
     public int maxVisibleChips = 6;
+    [Header("Lock UI")]
+    public GameObject lockedOverlay;   // padlock icon/dimmer
+    public bool disableClickWhenLocked = true;
+
+    [Header("Badges")]
+    public GameObject availableBadge;  // optional
+
+    public void SetLockedVisual(bool isLocked)
+    {
+        if (lockedOverlay) lockedOverlay.SetActive(isLocked);
+        if (button && disableClickWhenLocked) button.interactable = !isLocked;
+    }
+
+    public void SetAvailableBadge(bool on)
+    {
+        if (availableBadge) availableBadge.SetActive(on);
+    }
 
     /// <summary>
     /// Configure this button for a location and populate friend chips.
@@ -55,5 +72,10 @@ public class LocationButton : MonoBehaviour
             button.onClick.RemoveAllListeners();
             if (onClick != null) button.onClick.AddListener(() => onClick());
         }
+    }
+
+    public void SetLabel(string stLocationName)
+    {
+        locationName.text = stLocationName;
     }
 }

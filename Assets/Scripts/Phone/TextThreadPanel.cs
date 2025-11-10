@@ -32,51 +32,107 @@ public class TextThreadPanel : MonoBehaviour
     public GameObject quickReplyButtonPrefab; // has Button + Text + optional Image
 
     Character current;
+    [SerializeField] private GameObject root;         // the panel GameObject
+    [SerializeField] private CanvasGroup canvasGroup; // optional, if present
 
     public void Show(Character other)
     {
         current = other;
+        if (root) root.SetActive(true);
+        if (canvasGroup) { canvasGroup.alpha = 1; canvasGroup.interactable = true; canvasGroup.blocksRaycasts = true; }
         Render();
-        gameObject.SetActive(true);
     }
 
-    public void Render()
+    public void Hide()
     {
-        // Clear
-        foreach (Transform c in contentRoot) Destroy(c.gameObject);
-        foreach (Transform c in quickReplyRoot) Destroy(c.gameObject);
+        current = default;
+        // optional: clear children so it’s fresh next time
+        if (contentRoot)
+            for (int i = contentRoot.childCount - 1; i >= 0; i--) Destroy(contentRoot.GetChild(i).gameObject);
+        if (quickReplyRoot)
+            for (int i = quickReplyRoot.childCount - 1; i >= 0; i--) Destroy(quickReplyRoot.GetChild(i).gameObject);
 
-        var msgs = TextThreads.GetThread(current);
-        QuickReply[] pending = null;
+        if (canvasGroup) { canvasGroup.alpha = 0; canvasGroup.interactable = false; canvasGroup.blocksRaycasts = false; }
+        if (root) root.SetActive(false);
+    }
+    
+public void Render()
+{
+    // Clear
+    foreach (Transform c in contentRoot) Destroy(c.gameObject);
+    foreach (Transform c in quickReplyRoot) Destroy(c.gameObject);
 
-        foreach (var m in msgs)
+    var msgs = TextThreads.GetThread(current);
+    QuickReply[] pending = null;
+    string pendingTargetScene = null; // <-- capture the scene from the NPC prompt
+
+    foreach (var m in msgs)
+    {
+        var prefab = m.isPlayer ? playerBubblePrefab : npcBubblePrefab;
+        var go = Instantiate(prefab, contentRoot);
+
+        var label = go.GetComponentInChildren<TMPro.TMP_Text>(true);
+        if (label) label.text = m.body ?? "";
+
+        // If this NPC message offers quick replies, remember replies + its target scene
+        if (!m.isPlayer && m.quickReplies != null && m.quickReplies.Count > 0)
         {
-            var prefab = m.isPlayer ? playerBubblePrefab : npcBubblePrefab;
-            var go = Instantiate(prefab, contentRoot);
-            go.GetComponentInChildren<TMPro.TMP_Text>().text = m.body;
-
-            if (!m.isPlayer && m.quickReplies != null && m.quickReplies.Count > 0)
-                pending = m.quickReplies.ToArray();
-        }
-
-        if (pending != null && pending.Length > 0)
-        {
-            foreach (var qr in pending)
+            pending = m.quickReplies.ToArray();
+// In your TextThreadPanel (or wherever you build quick replies for a thread)
+            bool HasInvite(string sceneName)
             {
-                var btnGO = Instantiate(quickReplyButtonPrefab, quickReplyRoot);
-                var txt = btnGO.GetComponentInChildren<TMPro.TMP_Text>();
-                txt.text = qr.label;
-
-                // optional icon mapping
-                var img = btnGO.GetComponentInChildren<Image>(true);
-                if (img != null) img.sprite = QuickReplyIconLibrary.Get(qr.iconKey); // your sprite atlas lookup
-
-                btnGO.GetComponent<Button>().onClick.AddListener(() =>
-                {
-                    TextThreads.SendPlayerResponse(current, qr);
-                    Render(); // refresh to show the new player bubble and hide buttons
-                });
+                var pins = PlayerPrefsExtra.GetList<CharacterLocation>("characterLocations", new List<CharacterLocation>());
+                return pins.Exists(p => string.Equals(p.location, sceneName, System.StringComparison.Ordinal));
             }
+
+// Before enabling “ok / go” quick-replies:
+            if (!HasInvite(pendingTargetScene))
+            {
+                // Hide or disable the quick reply buttons
+                quickReplyRoot.gameObject.SetActive(false);
+            }
+            
+            pendingTargetScene = m.location; // <-- sceneName key to route to
         }
     }
+
+    if (pending != null && pending.Length > 0)
+    {
+        foreach (var qr in pending)
+        {
+            var btnGO = Instantiate(quickReplyButtonPrefab, quickReplyRoot);
+
+            var txt = btnGO.GetComponentInChildren<TMPro.TMP_Text>(true);
+            if (txt) txt.text = qr.label ?? "";
+
+            // optional icon mapping
+            var img = btnGO.GetComponentInChildren<UnityEngine.UI.Image>(true);
+            if (img != null) img.sprite = QuickReplyIconLibrary.Get(qr.iconKey);
+
+            var button = btnGO.GetComponent<UnityEngine.UI.Button>();
+            if (button == null) continue;
+
+            button.onClick.RemoveAllListeners();
+            button.onClick.AddListener(() =>
+            {
+                // 1) record player's reply in the thread
+                TextThreads.SendPlayerResponse(current, qr);
+
+                // 2) navigate if the NPC message specified a destination
+                if (!string.IsNullOrWhiteSpace(pendingTargetScene))
+                {
+                    Hide(); // prevent overlay flicker and block raycasts before scene load
+                    LocationRouter.Go(pendingTargetScene);
+                }
+                else
+                {
+                    // no destination on the prompt; just refresh UI
+                    Render();
+                }
+            });
+        }
+    }
+}
+
+
 }

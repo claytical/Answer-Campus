@@ -12,37 +12,37 @@ namespace VNEngine
         public string locationScene;
         public bool addLocationToMap = true;
 
-        // Called initially when the node is run, put most of your logic here
         public override void Run_Node()
         {
-            List<CharacterLocation> characterLocations = PlayerPrefsExtra.GetList<CharacterLocation>("characterLocations", new List<CharacterLocation>());
+            if (string.IsNullOrWhiteSpace(locationScene))
+            {
+                Debug.LogWarning("[NodeMap] Missing locationScene.");
+                Finish_Node();
+                return;
+            }
 
-// Remove *any* character already at this location
-            characterLocations.RemoveAll(loc => loc.location == locationScene);
+            var pins = PlayerPrefsExtra.GetList<CharacterLocation>("characterLocations", new List<CharacterLocation>());
 
-            Debug.Log($"Attempting to add character pin to Map : {character} at {locationScene}");
+            // Always dedupe for this character+scene first
+            pins.RemoveAll(p =>
+                EqualityComparer<Character>.Default.Equals(p.character, character) &&
+                string.Equals(p.location, locationScene, System.StringComparison.Ordinal));
 
             if (addLocationToMap)
             {
-                Debug.Log($"{character} added to Map");
-
-                characterLocations.Add(new CharacterLocation
-                {
-                    character = character,
-                    location = locationScene
-                });
+                pins.Add(new CharacterLocation { character = character, location = locationScene });
+                Debug.Log($"[NodeMap] Added pin: {character} @ {locationScene}");
             }
             else
             {
-                Debug.Log($"{character} removed from Map (via addLocationToMap = false)");
-                // No need to remove here; already removed above
+                Debug.Log($"[NodeMap] Removed pin (noop add): {character} @ {locationScene}");
             }
 
-            PlayerPrefsExtra.SetList("characterLocations", characterLocations);
+            PlayerPrefsExtra.SetList("characterLocations", pins);
+            PlayerPrefs.Save();
 
             Finish_Node();
         }
-
 
         // What happens when the user clicks on the dialogue text or presses spacebar? Either nothing should happen, or you call Finish_Node to move onto the next node
         public override void Button_Pressed()

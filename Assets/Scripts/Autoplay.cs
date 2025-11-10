@@ -22,8 +22,9 @@ namespace VNEngine
 
         void Start()
         {
-            if (UIManager.ui_manager.autoplay_image != null)
-                normal_sprite = UIManager.ui_manager.autoplay_image.sprite;
+            if(global::UIManager.Instance)
+                if (UIManager.ui_manager.autoplay_image != null)
+                    normal_sprite = UIManager.ui_manager.autoplay_image.sprite;
 
             // Use player preferences to store whether or not we should be autoplaying
             if (use_player_prefs)

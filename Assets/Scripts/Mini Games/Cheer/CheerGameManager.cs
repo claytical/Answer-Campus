@@ -292,50 +292,80 @@ public class CheerGameManager : MonoBehaviour
         
         StartCoroutine(GameFlowRoutine());
     }
-    private void CleanupCheerForQuarterEnd()
+// Add/replace inside CheerGameManager
+
+private void CleanupCheerForQuarterEnd()
+{
+    // stop anything we started
+    if (_watchCueRoutine != null) { StopCoroutine(_watchCueRoutine); _watchCueRoutine = null; }
+    if (_runRoundRoutine != null) { StopCoroutine(_runRoundRoutine); _runRoundRoutine = null; }
+    if (_markerCo != null)       { StopCoroutine(_markerCo);        _markerCo = null; }
+    _markerBusy = false;                 // <<< important: allow next marker
+    _markerLeaderIdx = 0;                // <<< important: start next quarter on first leader
+
+    // stop FMOD event if it’s still going
+    if (_activeCheer.isValid())
     {
-        // stop anything we started
-        if (_watchCueRoutine != null) { StopCoroutine(_watchCueRoutine); _watchCueRoutine = null; }
-        if (_runRoundRoutine != null) { StopCoroutine(_runRoundRoutine); _runRoundRoutine = null; }
+        _activeCheer.getPlaybackState(out var st);
+        if (st != FMOD.Studio.PLAYBACK_STATE.STOPPED)
+            _activeCheer.stop(FMOD.Studio.STOP_MODE.IMMEDIATE);
+        _activeCheer.release();
+    }
+    _roundActive = false;
 
-        // stop FMOD event if it’s still going
-        if (_activeCheer.isValid())
+    // clear timing/cue state
+    _baseDSP = double.NaN;
+    _lastCueStep = 0;
+    while (_cueQueue.TryDequeue(out _)) {}
+
+    // reset round counters
+    _beatsProcessedThisRound = 0;
+    combosMade = 0;
+    opportunitiesThisRound = 0;
+    markersThisRound = 0;
+
+    // hide & reset UI
+    ResetAllLeadersVisuals();
+    for (int i = 0; i < matchSequences.Count; i++)
+    {
+        ResetGlyphTintAndHide(i);
+        matchSequences[i].cheerleader.countdownBar?.Cancel();
+    }
+    spotlight?.gameObject.SetActive(false);
+
+    // clear input buffers
+    CheerInputBridge.Instance?.Clear();
+}
+
+private void ResetAllLeadersVisuals()
+{
+    // Clear leader UI state so nothing “sticks” between quarters
+    if (matchSequences == null) return;
+
+    for (int i = 0; i < matchSequences.Count; i++)
+    {
+        var cl = matchSequences[i].cheerleader;
+
+        if (cl.glyphA)
         {
-            FMOD.Studio.PLAYBACK_STATE st;
-            _activeCheer.getPlaybackState(out st);
-            if (st != FMOD.Studio.PLAYBACK_STATE.STOPPED)
-                _activeCheer.stop(FMOD.Studio.STOP_MODE.IMMEDIATE);
-            _activeCheer.release();
+            cl.glyphA.sprite = null;
+            cl.glyphA.color = highlightColor;
+            cl.glyphA.gameObject.SetActive(false);
         }
-        _roundActive = false;
-
-        // clear timing/cue state
-        _baseDSP = double.NaN;
-        _lastCueStep = 0;
-        while (_cueQueue.TryDequeue(out _)) {}
-
-        // reset round counters
-        _beatsProcessedThisRound = 0;
-        combosMade = 0;
-        opportunitiesThisRound = 0;   // ← add
-        markersThisRound = 0;  
-        // hide & reset UI (works whether root is active or not if you hold refs)
-        ResetAllLeadersVisuals();           // sets glyphA/B.color = default, sprite=null, SetActive(false)
-        for (int i =0; i < matchSequences.Count; i++)
+        if (cl.glyphB)
         {
-            ResetGlyphTintAndHide(i);
-            matchSequences[i].cheerleader.countdownBar?.Cancel();
+            cl.glyphB.sprite = null;
+            cl.glyphB.color = highlightColor;
+            cl.glyphB.gameObject.SetActive(false);
         }
-        spotlight?.gameObject.SetActive(false);
-        // clear input buffers
-        CheerInputBridge.Instance?.Clear();
+
+        if (cl.cheer) cl.cheer.SetCombo(CheerCombo.Default);
+        activeDirections.Remove(i);
     }
 
-    private void ResetAllLeadersVisuals()
-    {
-        
-    }
-    
+    UnhighlightAll();
+}
+
     IEnumerator GameFlowRoutine()
     {
         yield return StartCoroutine(FadeFromBlack());

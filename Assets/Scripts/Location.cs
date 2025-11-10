@@ -26,6 +26,7 @@ public static class LocationRegistry
         return loc;
     }
 }
+
 public class Location : MonoBehaviour
 {
     public string scene;
@@ -47,34 +48,7 @@ public class Location : MonoBehaviour
     }
     public void GoToLocation()
     {
-
-        List<CharacterLocation> characterLocations = PlayerPrefsExtra.GetList<CharacterLocation>("characterLocations", new List<CharacterLocation>());
-        PlayerPrefsExtra.SetList<CharacterLocation>("characterLocations", characterLocations);
-
-        // Retrieve the messages list from PlayerPrefsExtra
-
-        List<TextMessage> messages = PlayerPrefsExtra.GetList<TextMessage>("messages", new List<TextMessage>());
-
-        messages = PlayerPrefsExtra.GetList<TextMessage>("messages", new List<TextMessage>());
-
-        // Find all characters associated with the specified scene
-        List<string> charactersToRemove = new List<string>();
-
-        foreach (TextMessage message in messages)
-        {
-            if (message.location == scene)
-            {
-                charactersToRemove.Add(message.from.ToString());  // Collect all characters from matching scenes
-            }
-        }
-
-        // Remove all messages where the character is in the list of characters to remove
-        messages.RemoveAll(message => charactersToRemove.Contains(message.from.ToString()));
-
-        // Save the updated list back to PlayerPrefsExtra
-        PlayerPrefsExtra.SetList("messages", messages);
-        SceneManager.LoadScene(scene);
-
+        LocationRouter.Go(scene);
     }
     public void ClearPlayerPrefs()
     {

@@ -12,6 +12,35 @@ public static class PhoneDataService
         return PlayerPrefsExtra.GetList<CharacterLocation>(
             "characterLocations", new List<CharacterLocation>()); // set elsewhere via your routing/placement
     }
+// PhoneDataService.cs  (add below GetCharacterLocations)
+    public static List<string> GetAllLocationNames()
+    {
+        var names = new HashSet<string>(StringComparer.Ordinal);
+
+        // 1) From any loaded StageRouteIndex assets (authoritative list used by routing)
+        foreach (var idx in Resources.LoadAll<StageRouteIndex>(""))
+        {
+            if (idx == null || idx.routes == null) continue;
+            foreach (var r in idx.routes)
+                if (r != null && r.location != null && !string.IsNullOrWhiteSpace(r.location.name))
+                    names.Add(r.location.name);
+        }
+
+        // 2) From any Location components present (scene-driven declarations)
+        foreach (var loc in GameObject.FindObjectsOfType<Location>(true))
+        {
+            if (loc == null) continue;
+            if (!string.IsNullOrWhiteSpace(loc.scene)) names.Add(loc.scene);
+            if (loc.data != null && !string.IsNullOrWhiteSpace(loc.data.name)) names.Add(loc.data.name);
+        }
+
+        // 3) From saved character pins (ensures we don't miss ad-hoc entries)
+        foreach (var cl in GetCharacterLocations())
+            if (!string.IsNullOrWhiteSpace(cl.location))
+                names.Add(cl.location);
+
+        return names.OrderBy(n => n).ToList();
+    }
 
     // ==== FRIENDS & MESSAGES ====
     public static Dictionary<Character, List<TextMessage>> GetMessageThreads()

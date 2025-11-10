@@ -15,23 +15,23 @@ public static class FootballScheduler
 {
     static FootballTeam[] opponents = new FootballTeam[]
     {
-        new FootballTeam("Northport University", "Grizzlies"),
+        new FootballTeam("Northport", "Grizzlies"),
         new FootballTeam("Central Tech", "Shock"),
         new FootballTeam("Valley State", "Hornets"),
         new FootballTeam("Eastern Pines", "Wolves"),
         new FootballTeam("Bayfront College", "Surge"),
         new FootballTeam("Riverside A&M", "Gators"),
         new FootballTeam("Highland University", "Stags"),
-        new FootballTeam("Metro Institute", "Titans")
+        new FootballTeam("Wheatley", "Titans")
     };
 
     public static void GenerateSchedule()
     {
         List<FootballGame> schedule = new List<FootballGame>();
-        List<int> possibleWeeks = new List<int> { 2, 3, 4, 5, 6, 7, 8, 9 };
+        List<int> possibleWeeks = new List<int> { 2, 4, 6, 9, 12};
         Shuffle(possibleWeeks);
 
-        for (int i = 0; i < 8; i++)
+        for (int i = 0; i < possibleWeeks.Count; i++)
         {
             schedule.Add(new FootballGame
             {
@@ -245,7 +245,7 @@ public class Calendar : MonoBehaviour
                 FMODAudioManager.Instance.PlayMusic(musicFMODEventReference);
             }
         }
-        FMODAudioManager.Instance.PrintActiveMusicInstances();
+//        FMODAudioManager.Instance.PrintActiveMusicInstances();
 
         if(StatsManager.Numbered_Stat_Exists("Week"))
         {
@@ -269,12 +269,12 @@ public class Calendar : MonoBehaviour
         {
             studyPrompt.text = prompt;
         }
-
+/*
         for (int i = 0; i < SemesterHelper.GetDaysToCrossOut(week); i++)
         {
             Instantiate(checkmark, calendarGrid);
         }
-
+*/
         if (week == SemesterHelper.FinalsWeek)
         {
             finalExamLocation.GoToLocation();
@@ -330,7 +330,7 @@ public class Calendar : MonoBehaviour
         {
             if (profile.character == bestFriendEnum)
             {
-                finalCharacterImage.sprite = profile.polaroid;
+                finalCharacterImage.sprite = profile.pictureLarge;
             }
         }
         string json = StatsManager.Get_String_Stat("FootballSchedule");

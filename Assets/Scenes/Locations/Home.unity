@@ -205,6 +205,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2516305}
+  - component: {fileID: 2516306}
+  - component: {fileID: 2516307}
   m_Layer: 5
   m_Name: Content
   m_TagString: Untagged
@@ -226,11 +228,51 @@ RectTransform:
   m_Children: []
   m_Father: {fileID: 1544749540}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 300}
+  m_AnchoredPosition: {x: 0, y: 0.000030517578}
+  m_SizeDelta: {x: 0, y: -57.670013}
   m_Pivot: {x: 0, y: 1}
+--- !u!114 &2516306
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2516304}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 59f8146938fff824cb5fd77236b75775, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.VerticalLayoutGroup
+  m_Padding:
+    m_Left: 0
+    m_Right: 0
+    m_Top: 0
+    m_Bottom: 0
+  m_ChildAlignment: 0
+  m_Spacing: 20
+  m_ChildForceExpandWidth: 1
+  m_ChildForceExpandHeight: 0
+  m_ChildControlWidth: 1
+  m_ChildControlHeight: 1
+  m_ChildScaleWidth: 0
+  m_ChildScaleHeight: 0
+  m_ReverseArrangement: 0
+--- !u!114 &2516307
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2516304}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3245ec927659c4140ac4f8d17403cc18, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.ContentSizeFitter
+  m_HorizontalFit: 0
+  m_VerticalFit: 0
 --- !u!1 &33791228
 GameObject:
   m_ObjectHideFlags: 0
@@ -1098,7 +1140,7 @@ MonoBehaviour:
   m_HandleRect: {fileID: 1791172064}
   m_Direction: 2
   m_Value: 1
-  m_Size: 0.9734375
+  m_Size: 0.6713594
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:
@@ -1434,7 +1476,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 0.392}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -2079,32 +2121,32 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   profiles:
   - character: 1
-    picture: {fileID: 21300000, guid: da364da1e4e30b749beb09dbc6af1ca2, type: 3}
-    polaroid: {fileID: 21300000, guid: 2653eb7e0ec240b4ea22928a73a8fb1a, type: 3}
+    pictureLarge: {fileID: 0}
+    pictureSmall: {fileID: 0}
   - character: 2
-    picture: {fileID: 21300000, guid: 073b7bb116f678a4e91e391971551ac8, type: 3}
-    polaroid: {fileID: 21300000, guid: ddb86266cbc27764997fe9fcc4e96320, type: 3}
+    pictureLarge: {fileID: 0}
+    pictureSmall: {fileID: 0}
   - character: 4
-    picture: {fileID: 21300000, guid: 8c39d5be82c8a27428117bce9bb5926d, type: 3}
-    polaroid: {fileID: 21300000, guid: ddba935bff2642a4399e05cc68b20f99, type: 3}
+    pictureLarge: {fileID: 0}
+    pictureSmall: {fileID: 0}
   - character: 5
-    picture: {fileID: 21300000, guid: ecedeb6931c397844b574e8366ec160d, type: 3}
-    polaroid: {fileID: 21300000, guid: 851c63a0fe6eeda49a9f3b914a6f61a8, type: 3}
+    pictureLarge: {fileID: 0}
+    pictureSmall: {fileID: 0}
   - character: 6
-    picture: {fileID: 21300000, guid: 0331339ccdb7f784fb487862d68e422b, type: 3}
-    polaroid: {fileID: 21300000, guid: 2d4b4148c84841047ba774221d61253f, type: 3}
+    pictureLarge: {fileID: 0}
+    pictureSmall: {fileID: 0}
   - character: 7
-    picture: {fileID: 21300000, guid: 1c36de5d4cb23214e874523beb9ad59d, type: 3}
-    polaroid: {fileID: 21300000, guid: a81b41a48334562468061e033b8a3093, type: 3}
+    pictureLarge: {fileID: 0}
+    pictureSmall: {fileID: 0}
   - character: 8
-    picture: {fileID: 21300000, guid: 9b2e69065e120eb4fbcf22d39e64a872, type: 3}
-    polaroid: {fileID: 21300000, guid: 88214b84c2b64d5468c2219d308c1724, type: 3}
+    pictureLarge: {fileID: 0}
+    pictureSmall: {fileID: 0}
   - character: 9
-    picture: {fileID: 21300000, guid: 418340026af91d844b0cb5f7ea54bc6d, type: 3}
-    polaroid: {fileID: 21300000, guid: fd0bc4f28157a7e41ad02ce76c5ee314, type: 3}
+    pictureLarge: {fileID: 0}
+    pictureSmall: {fileID: 0}
   - character: 11
-    picture: {fileID: 21300000, guid: 3ba039f683731b84989782652d67a739, type: 3}
-    polaroid: {fileID: 0}
+    pictureLarge: {fileID: 0}
+    pictureSmall: {fileID: 0}
 --- !u!4 &283277975
 Transform:
   m_ObjectHideFlags: 0
@@ -3291,8 +3333,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0.5}
   m_AnchorMax: {x: 1, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 640}
+  m_AnchoredPosition: {x: 0, y: 0.00066757}
+  m_SizeDelta: {x: 0, y: 446.67}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &399861004
 GameObject:
@@ -3532,15 +3574,15 @@ MonoBehaviour:
   m_GameObject: {fileID: 401284301}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 59f8146938fff824cb5fd77236b75775, type: 3}
+  m_Script: {fileID: 11500000, guid: 30649d3a9faa99c48a7b1166b86bf2a0, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.VerticalLayoutGroup
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.HorizontalLayoutGroup
   m_Padding:
     m_Left: 0
     m_Right: 0
-    m_Top: 20
+    m_Top: 0
     m_Bottom: 0
-  m_ChildAlignment: 1
+  m_ChildAlignment: 0
   m_Spacing: 0
   m_ChildForceExpandWidth: 1
   m_ChildForceExpandHeight: 1
@@ -3799,7 +3841,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 325, y: -50}
+  m_AnchoredPosition: {x: 625, y: -50}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &428430394
@@ -5062,21 +5104,21 @@ MonoBehaviour:
   threadPanel: {fileID: 719092727}
   profiles:
   - character: 1
-    picture: {fileID: 21300000, guid: 3dfe020e0a1d9214aa33f10145b38cbd, type: 3}
-    polaroid: {fileID: 21300000, guid: 2653eb7e0ec240b4ea22928a73a8fb1a, type: 3}
+    pictureLarge: {fileID: 8660416113484388026, guid: bdfe024952f5942f5a3966b4287857be, type: 3}
+    pictureSmall: {fileID: 249183888624173916, guid: 4cf0080e6849e4b929651ca5c8c1ce77, type: 3}
   - character: 2
-    picture: {fileID: 21300000, guid: b392334a1e885d14bbc342f4121bf91c, type: 3}
-    polaroid: {fileID: 21300000, guid: ddb86266cbc27764997fe9fcc4e96320, type: 3}
+    pictureLarge: {fileID: -1245310685589620192, guid: aec523bcb8cbd437cba5a583106626a8, type: 3}
+    pictureSmall: {fileID: -7154505799222420511, guid: 2841af9d9e6f542ff93afb7d354aa96a, type: 3}
   - character: 4
-    picture: {fileID: 21300000, guid: d56a500e8f720fb41afec8db1367c347, type: 3}
-    polaroid: {fileID: 21300000, guid: ddba935bff2642a4399e05cc68b20f99, type: 3}
+    pictureLarge: {fileID: -3847336592366256858, guid: 5b2719dbf82754b458cc13c81cf469cd, type: 3}
+    pictureSmall: {fileID: -632995552590147660, guid: e1c990f80e7174aad922e88af84127cc, type: 3}
   - character: 9
-    picture: {fileID: 21300000, guid: 58c1469f8102f2f4eb2610eb2e695c7c, type: 3}
-    polaroid: {fileID: 21300000, guid: fd0bc4f28157a7e41ad02ce76c5ee314, type: 3}
+    pictureLarge: {fileID: 4846010748277474759, guid: 72dec0092054c46b998d6d428d93375c, type: 3}
+    pictureSmall: {fileID: -1059560079309271537, guid: 8fa7ea78ea9884a3fae3784eab69e942, type: 3}
   - character: 8
-    picture: {fileID: 21300000, guid: f44aa091dd82b0c42bcd02b7e51a4659, type: 3}
-    polaroid: {fileID: 21300000, guid: 88214b84c2b64d5468c2219d308c1724, type: 3}
-  contacts: 
+    pictureLarge: {fileID: -8205021517869399529, guid: a5891b8aa140c44a08b2e68785be5979, type: 3}
+    pictureSmall: {fileID: -1649978104837184759, guid: da1a0ea9618ff4a6089205e8427c22be, type: 3}
+  contacts: {fileID: 0}
 --- !u!1 &674892793
 GameObject:
   m_ObjectHideFlags: 0
@@ -5894,6 +5936,8 @@ MonoBehaviour:
   playerBubblePrefab: {fileID: 7524520120466154898, guid: 71b385a3490d94773a91e826f3f04ce2, type: 3}
   quickReplyRoot: {fileID: 1070348236}
   quickReplyButtonPrefab: {fileID: 6603393653193782846, guid: a4ce57f5ae1194ebd85417df65d848a4, type: 3}
+  root: {fileID: 719092725}
+  canvasGroup: {fileID: 0}
 --- !u!1 &727543606
 GameObject:
   m_ObjectHideFlags: 0
@@ -6059,7 +6103,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 390, y: 844}
+  m_SizeDelta: {x: 750, y: 650.6667}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &728598687
 CanvasRenderer:
@@ -6089,7 +6133,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 2316400341747385805, guid: 8d470f6842a7b4476ab397215528744a, type: 3}
+  m_Sprite: {fileID: -6391955146557694426, guid: 5da98eed5c29244deaacb04e8b3f9864, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -6356,7 +6400,7 @@ RectTransform:
   m_Children: []
   m_Father: {fileID: 1532707050}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMin: {x: 0, y: 0.3103209}
   m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 20, y: 20}
@@ -8461,7 +8505,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 0.392}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -9334,8 +9378,8 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 787465958}
   m_HandleRect: {fileID: 787465957}
   m_Direction: 2
-  m_Value: 0
-  m_Size: 1
+  m_Value: 1.0000004
+  m_Size: 0.6896791
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:
@@ -9776,6 +9820,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1103093208}
   - component: {fileID: 1103093209}
+  - component: {fileID: 1103093210}
   m_Layer: 5
   m_Name: Content
   m_TagString: Untagged
@@ -9799,8 +9844,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 20, y: -0.00061035156}
+  m_SizeDelta: {x: -40, y: -446.67}
   m_Pivot: {x: 0, y: 1}
 --- !u!114 &1103093209
 MonoBehaviour:
@@ -9820,14 +9865,28 @@ MonoBehaviour:
     m_Top: 0
     m_Bottom: 0
   m_ChildAlignment: 0
-  m_Spacing: 20
+  m_Spacing: 60
   m_ChildForceExpandWidth: 1
   m_ChildForceExpandHeight: 0
-  m_ChildControlWidth: 0
-  m_ChildControlHeight: 0
+  m_ChildControlWidth: 1
+  m_ChildControlHeight: 1
   m_ChildScaleWidth: 0
-  m_ChildScaleHeight: 1
+  m_ChildScaleHeight: 0
   m_ReverseArrangement: 0
+--- !u!114 &1103093210
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1103093207}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3245ec927659c4140ac4f8d17403cc18, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.ContentSizeFitter
+  m_HorizontalFit: 0
+  m_VerticalFit: 2
 --- !u!1 &1107949951
 GameObject:
   m_ObjectHideFlags: 0
@@ -9887,35 +9946,35 @@ MonoBehaviour:
   phone: {fileID: 1985697531}
   profiles:
   - character: 0
-    picture: {fileID: 0}
-    polaroid: {fileID: 0}
+    pictureLarge: {fileID: 0}
+    pictureSmall: {fileID: 0}
   - character: 1
-    picture: {fileID: 21300000, guid: 3dfe020e0a1d9214aa33f10145b38cbd, type: 3}
-    polaroid: {fileID: 0}
+    pictureLarge: {fileID: 0}
+    pictureSmall: {fileID: 0}
   - character: 2
-    picture: {fileID: 21300000, guid: b392334a1e885d14bbc342f4121bf91c, type: 3}
-    polaroid: {fileID: 0}
+    pictureLarge: {fileID: 0}
+    pictureSmall: {fileID: 0}
   - character: 4
-    picture: {fileID: 21300000, guid: d56a500e8f720fb41afec8db1367c347, type: 3}
-    polaroid: {fileID: 0}
+    pictureLarge: {fileID: 0}
+    pictureSmall: {fileID: 0}
   - character: 5
-    picture: {fileID: 21300000, guid: 53489738eb852af45a5e2f77c7f1dbb7, type: 3}
-    polaroid: {fileID: 0}
+    pictureLarge: {fileID: 0}
+    pictureSmall: {fileID: 0}
   - character: 2
-    picture: {fileID: 21300000, guid: ddb86266cbc27764997fe9fcc4e96320, type: 3}
-    polaroid: {fileID: 0}
+    pictureLarge: {fileID: 0}
+    pictureSmall: {fileID: 0}
   - character: 7
-    picture: {fileID: 21300000, guid: 636fd914f5a10e24dbbfbd3756b01668, type: 3}
-    polaroid: {fileID: 0}
+    pictureLarge: {fileID: 0}
+    pictureSmall: {fileID: 0}
   - character: 8
-    picture: {fileID: 21300000, guid: f44aa091dd82b0c42bcd02b7e51a4659, type: 3}
-    polaroid: {fileID: 0}
+    pictureLarge: {fileID: 0}
+    pictureSmall: {fileID: 0}
   - character: 9
-    picture: {fileID: 21300000, guid: 58c1469f8102f2f4eb2610eb2e695c7c, type: 3}
-    polaroid: {fileID: 0}
+    pictureLarge: {fileID: 0}
+    pictureSmall: {fileID: 0}
   - character: 11
-    picture: {fileID: 21300000, guid: cde9c8e6ec76f3d45817887bd14e2649, type: 3}
-    polaroid: {fileID: 0}
+    pictureLarge: {fileID: 0}
+    pictureSmall: {fileID: 0}
 --- !u!114 &1107949954
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -9992,7 +10051,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 65, y: -50}
+  m_AnchoredPosition: {x: 125, y: -50}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1110224602
@@ -11051,6 +11110,7 @@ MonoBehaviour:
   mapView: {fileID: 60840722}
   friendsView: {fileID: 618491860}
   agendaView: {fileID: 1593022741}
+  overlayPanels: []
 --- !u!222 &1241257051
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -12002,10 +12062,10 @@ RectTransform:
   - {fileID: 381739992}
   m_Father: {fileID: 728598685}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.5, y: 1}
-  m_AnchorMax: {x: 0.5, y: 1}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 390, y: 102}
+  m_SizeDelta: {x: 0, y: 102}
   m_Pivot: {x: 0.5, y: 1}
 --- !u!114 &1504492836
 MonoBehaviour:
@@ -12611,7 +12671,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1593022740
 RectTransform:
   m_ObjectHideFlags: 0
@@ -12798,10 +12858,10 @@ RectTransform:
   - {fileID: 428430393}
   m_Father: {fileID: 728598685}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.5, y: 0}
-  m_AnchorMax: {x: 0.5, y: 0}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 1, y: 0}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 390, y: 102}
+  m_SizeDelta: {x: 0, y: 102}
   m_Pivot: {x: 0.5, y: 0}
 --- !u!114 &1617118974
 MonoBehaviour:
@@ -13041,7 +13101,7 @@ MonoBehaviour:
   m_Viewport: {fileID: 1760206687}
   m_HorizontalScrollbar: {fileID: 1812092278}
   m_VerticalScrollbar: {fileID: 1669080732}
-  m_HorizontalScrollbarVisibility: 2
+  m_HorizontalScrollbarVisibility: 1
   m_VerticalScrollbarVisibility: 2
   m_HorizontalScrollbarSpacing: -3
   m_VerticalScrollbarSpacing: -3
@@ -13061,7 +13121,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 0.392}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -13243,7 +13303,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1281869375}
   m_HandleRect: {fileID: 1281869374}
   m_Direction: 2
-  m_Value: 0
+  m_Value: 1
   m_Size: 1
   m_NumberOfSteps: 0
   m_OnValueChanged:
@@ -13573,7 +13633,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0}
   m_AnchorMax: {x: 0.5, y: 0}
-  m_AnchoredPosition: {x: 0, y: -149.99998}
+  m_AnchoredPosition: {x: 0, y: -150}
   m_SizeDelta: {x: 746, y: 1188}
   m_Pivot: {x: 0.5, y: 0}
 --- !u!114 &1706162124
@@ -13958,7 +14018,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: -17, y: -17}
+  m_SizeDelta: {x: -17, y: 0}
   m_Pivot: {x: 0, y: 1}
 --- !u!114 &1760206688
 MonoBehaviour:
@@ -14179,7 +14239,7 @@ RectTransform:
   m_Children: []
   m_Father: {fileID: 2096624013}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0.026562512}
+  m_AnchorMin: {x: 0, y: 0.32864058}
   m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 20, y: 20}
@@ -15026,7 +15086,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 195, y: -50}
+  m_AnchoredPosition: {x: 375, y: -50}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1880575043
@@ -15226,7 +15286,7 @@ MonoBehaviour:
   studyPrompt: {fileID: 1535937245}
   calendarGrid: {fileID: 1849813262}
   checkmark: {fileID: 5999730407538579610, guid: 2fd38ac507d9c4bc8bec74fef4b3072d, type: 3}
-  week: 3
+  week: 0
   ambientFMODEventReference:
     Guid:
       Data1: -806253618
@@ -15664,6 +15724,7 @@ MonoBehaviour:
   mapView: {fileID: 0}
   friendsView: {fileID: 0}
   agendaView: {fileID: 0}
+  overlayPanels: []
 --- !u!1 &1994580037
 GameObject:
   m_ObjectHideFlags: 0

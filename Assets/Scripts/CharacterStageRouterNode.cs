@@ -28,6 +28,7 @@ namespace VNEngine
         private EventInstance ambientFMODEvent;
 public override void Run_Node()
 {
+    
     if (FMODAudioManager.Instance != null)
     {
 
@@ -35,13 +36,14 @@ public override void Run_Node()
 
         if (!ambientFMODEventName.IsNull) { FMODAudioManager.Instance.PlayAmbient(ambientFMODEventName); }
     }
-
+    int currentWeek = Mathf.RoundToInt(StatsManager.Get_Numbered_Stat("Week"));
     List<CharacterLocation> characterLocations = PlayerPrefsExtra.GetList<CharacterLocation>("characterLocations", new List<CharacterLocation>());
     CharacterLocation? selected = null;
-
     // Find the first character placed on the map for this scene
     foreach (CharacterLocation loc in characterLocations)
     {
+        Debug.Log($"[ROUTER] sceneName={currentSceneName} Character Location={loc} Current Week = {currentWeek}");
+
         if (loc.location == currentSceneName)
         {
             selected = loc;
@@ -54,9 +56,9 @@ public override void Run_Node()
         var loc = selected.Value;
         string statKey = $"{loc.character} - {currentSceneName} - Stage";
         float stage = StatsManager.Get_Numbered_Stat(statKey);
-        int currentWeek = Mathf.RoundToInt(StatsManager.Get_Numbered_Stat("Week"));
         foreach (StageConversation route in routes)
         {
+            Debug.Log($"[Router] cand: char={route.character} stage={route.stage} unlockWeek={route.unlockWeek} conv={(route.conversation? route.conversation.name : "NULL")}");
             if (route.character == loc.character && route.stage == stage)
             {
 

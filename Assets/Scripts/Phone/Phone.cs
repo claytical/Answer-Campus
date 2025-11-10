@@ -1,8 +1,13 @@
 // Phone.cs  (refactor – keep animator + public hooks)
+
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using VNEngine;
+
 public class Phone : MonoBehaviour
 {
     public TextMeshProUGUI title;
@@ -15,7 +20,7 @@ public class Phone : MonoBehaviour
     public MapView mapView;
     public FriendsView friendsView;
     public AgendaView agendaView;
-
+    [SerializeField] private GameObject[] overlayPanels;
     private Animator anim;
 
     void Start()
@@ -30,13 +35,47 @@ public class Phone : MonoBehaviour
     public void ShowMap()
     {
         title.text = "Map";
-        TogglePanels(map:true);
-        mapView.Render(PhoneDataService.GetCharacterLocations());
+        HideOverlays();
+        TogglePanels(map: true);
+
+        int currentWeek = (int)VNEngine.StatsManager.Get_Numbered_Stat("Week");
+        var pins = PhoneDataService.GetCharacterLocations();
+
+        var ctx = new MapAvailability.Context {
+            currentWeek = currentWeek,
+            requireFriendToTrack = true,
+            characterPins = pins,
+            lockableLocationsScene = Array.Empty<Location>(),
+            allSceneLocations      = Array.Empty<Location>(),
+            npcRouteIndices        = Resources.LoadAll<StageRouteIndex>(""),
+            getThisWeeksGame = FootballScheduler.GetThisWeeksGame,
+            isHomeGame      = g => ((FootballGame)g).isHome,
+            gamePlayed      = g => ((FootballGame)g).played
+        };
+        Debug.Log($"[PHONE] pins: {string.Join(", ", pins.Select(p => $"{p.character}@{p.location}"))}");
+        var idxs = Resources.LoadAll<StageRouteIndex>("");
+        Debug.Log($"[PHONE] RouteIndex assets: {idxs.Length}");
+        var lds  = Resources.LoadAll<LocationData>("");
+        Debug.Log($"[PHONE] LocationData assets: {lds.Length}");
+
+        var snapshot = MapAvailability.Build(ctx);
+        
+        var visible = snapshot
+            .Values
+            .Where(st =>
+                st != null &&
+                st.interactable &&
+                (st.friends?.Count ?? 0) > 0)                    // <-- require stage-valid friends
+            .OrderBy(st => st.displayName ?? st.locationName)
+            .ToDictionary(st => st.locationName, st => st, StringComparer.Ordinal);
+        
+        mapView.RenderSnapshot(visible);
     }
 
     public void ShowFriends()
     {
         title.text = "Friends";
+        HideOverlays();
         TogglePanels(friends:true);
         friendsView.Render();
         ClearNotifications(); // opening inbox clears
@@ -45,6 +84,7 @@ public class Phone : MonoBehaviour
     public void ShowAgenda()
     {
         title.text = "Agenda";
+        HideOverlays();
         TogglePanels(agenda:true);
         agendaView.Render();
     }
@@ -65,8 +105,39 @@ public class Phone : MonoBehaviour
 
     private void TogglePanels(bool map=false, bool friends=false, bool agenda=false)
     {
+        friendsView.HideThread();
         if (mapPanel) mapPanel.SetActive(map);
         if (friendsPanel) friendsPanel.SetActive(friends);
         if (agendaPanel) agendaPanel.SetActive(agenda);
+
+        HideOverlays();
     }
+    private void HideOverlays()
+    {
+        if (overlayPanels == null) return;
+
+        foreach (var go in overlayPanels)
+        {
+            if (!go) continue;
+
+            // Prefer component-driven hide (handles CanvasGroup + child-root cases)
+            var ttp = go.GetComponent<TextThreadPanel>() ?? go.GetComponentInChildren<TextThreadPanel>(true);
+            if (ttp != null)
+            {
+                ttp.Hide();
+                continue;
+            }
+
+            // Fallback: brute-force hide this GO
+            var cg = go.GetComponent<CanvasGroup>();
+            if (cg)
+            {
+                cg.alpha = 0;
+                cg.interactable = false;
+                cg.blocksRaycasts = false;
+            }
+            go.SetActive(false);
+        }
+    }
+
 }

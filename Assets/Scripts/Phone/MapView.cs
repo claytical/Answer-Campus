@@ -14,42 +14,29 @@ public class MapView : MonoBehaviour
     public StringEvent onLocationSelected;     // (string locationName)
     [Serializable] public class StringEvent : UnityEvent<string> {}
 
-    /// <summary>
-    /// Render one button per location; each button shows its friend chips.
-    /// </summary>
-    public void Render(List<CharacterLocation> characterLocations)
+    public void RenderSnapshot(Dictionary<string, MapAvailability.Status> snapshot)
     {
-        // Clear
         foreach (Transform child in locationsRoot) Destroy(child.gameObject);
-        if (characterLocations == null || characterLocations.Count == 0) return;
+        if (snapshot == null || snapshot.Count == 0) return;
 
-        var byLocation = characterLocations
-            .Where(cl => !string.IsNullOrWhiteSpace(cl.location))
-            .GroupBy(cl => cl.location)
-            .OrderBy(g => g.Key);
-
-        foreach (var group in byLocation)
+        foreach (var st in snapshot.Values.OrderBy(s => s.displayName ?? s.locationName))
         {
-            string locationName = group.Key;
-
-            // distinct friends at this location
-            var friends = group.Select(cl => cl.character)
-                .Distinct()
-                .OrderBy(c => c.ToString())
-                .ToList();
-
             var go = Instantiate(locationButtonPrefab, locationsRoot);
             var lb = go.GetComponent<LocationButton>();
-            if (lb == null)
-            {
-                Debug.LogError("LocationButton component missing on locationButtonPrefab.");
-                continue;
-            }
-Debug.Log($"Location Name: {locationName}");
-            lb.Bind(locationName, friends, () =>
-            {
-                onLocationSelected?.Invoke(locationName);
-            });
+            if (!lb) { Debug.LogError("LocationButton missing"); continue; }
+
+            // Route by sceneName (same wiring as big map via LocationRouter)
+            System.Action onClick = () => LocationRouter.Go(st.locationName);
+
+            // Bind: use the FRIENDLY name for the label (not the route key)
+            lb.Bind(st.displayName ?? st.locationName, st.friends ?? new List<Character>(), onClick);
+
+            // Phone list only contains open items, so keep buttons enabled
+            if (lb.button) lb.button.interactable = true;
         }
     }
+
+
+
+
 }

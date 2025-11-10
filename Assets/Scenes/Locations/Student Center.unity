@@ -33962,7 +33962,8 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: -5143952188114400212, guid: 0f3abc4b5d99b424eb1a504fb2b92c1b, type: 3}
       propertyPath: textMessage.body
-      value: Come meet some friends!
+      value: You have to start your semester right with a Sylly Party. Come meet
+        my friends!
       objectReference: {fileID: 0}
     - target: {fileID: -5143952188114400212, guid: 0f3abc4b5d99b424eb1a504fb2b92c1b, type: 3}
       propertyPath: textMessage.from

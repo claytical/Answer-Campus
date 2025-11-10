@@ -14,18 +14,19 @@ public class FriendsView : MonoBehaviour
     public TextThreadPanel threadPanel;      // Right-side thread panel to show history & quick replies
 
     [Header("Data Mapping")]
+
     public ProfilePicture[] profiles;        // Character -> Sprite mapping (same struct used in TextMessageList)
 
-    [Header("Contacts (optional)")]
-    [Tooltip("If empty, we’ll infer contacts from message threads. If set, we’ll list exactly these.")]
-    public Character[] contacts;
+    public Characters contacts;
+//    [Header("Contacts (optional)")]
+//    [Tooltip("If empty, we’ll infer contacts from message threads. If set, we’ll list exactly these.")]
+    //public Character[] contacts;
 
     // Call this whenever the phone opens Friends tab
     public void Render()
     {
         // Clear list
         foreach (Transform c in listRoot) Destroy(c.gameObject);
-
         // Build thread index from saved messages
         var allMsgs = TextThreads.GetAll();                                   // stored in PlayerPrefs ("messages")
         var threadsByCharacter = allMsgs
@@ -33,17 +34,15 @@ public class FriendsView : MonoBehaviour
             .ToDictionary(g => g.Key, g => g.OrderBy(m => m.unixTime).ToList()); // oldest->newest
 
         // Determine who to show: explicit contacts or inferred from threads
-        var roster = (contacts != null && contacts.Length > 0)
-            ? contacts.Distinct().ToList()
-            : threadsByCharacter.Keys.Distinct().OrderBy(c => c.ToString()).ToList();
-
+//        var roster = (contacts.profiles.Distinct().ToList(): threadsByCharacter.Keys.Distinct().OrderBy(c => c.ToString()).ToList();
+        var roster = threadsByCharacter.Keys.Distinct().OrderBy(c => c.ToString()).ToList();
         // Current locations for “at X” label
         var charLocs = PlayerPrefsExtra.GetList<CharacterLocation>("characterLocations", new List<CharacterLocation>());
         // map Character -> last known location
         var locByChar = charLocs
             .GroupBy(cl => cl.character)
             .ToDictionary(g => g.Key, g => g.Last().location);
-
+        
         foreach (var who in roster)
         {
             var go = Instantiate(threadButtonPrefab, listRoot);
@@ -60,7 +59,7 @@ public class FriendsView : MonoBehaviour
             // --- Icon
             if (vm.profile)
             {
-                var pic = profiles.FirstOrDefault(p => p.character.Equals(who)).picture;
+                var pic = profiles.FirstOrDefault(p => p.character.Equals(who)).pictureLarge;
                 if (pic) vm.profile.sprite = pic;
             }
 
@@ -81,9 +80,23 @@ public class FriendsView : MonoBehaviour
                 btn.onClick.AddListener(() =>
                 {
                     // Open the thread UI for this friend
-                    threadPanel.Show(who);
+                    ShowThread(who);
                 });
             }
         }
+        ShowList();
+
     }
+    public void ShowList()
+    {
+        if (listRoot.gameObject) listRoot.gameObject.SetActive(true);
+        if (threadPanel)   threadPanel.Hide();
+    }
+
+    private void ShowThread(Character who)
+    {
+        if (listRoot) listRoot.gameObject.SetActive(false);
+        if (threadPanel)   threadPanel.Show(who);
+    }
+    public void HideThread() { if (threadPanel) threadPanel.Hide(); }
 }

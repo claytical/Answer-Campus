@@ -12,8 +12,8 @@ using System.Linq;  // For LINQ methods
 public struct ProfilePicture
 {
     public Character character;
-    public Sprite picture;
-    public Sprite polaroid;
+    public Sprite pictureLarge;
+    public Sprite pictureSmall;
 
 }
 public static class TextThreads
@@ -101,7 +101,7 @@ public class TextMessageList : MonoBehaviour
             {
                 if (profiles[j].character == from)
                 {
-                    go.GetComponent<ViewTextMessage>().profile.sprite = profiles[j].picture;
+                    go.GetComponent<ViewTextMessage>().profile.sprite = profiles[j].pictureLarge;
                     break;
                 }
             }
@@ -139,7 +139,7 @@ public class TextMessageList : MonoBehaviour
             {
                 if (profiles[j].character == from)
                 {
-                    inboxProfile.sprite = profiles[j].picture;
+                    inboxProfile.sprite = profiles[j].pictureSmall;
                     break;
                 }
             }

@@ -7,7 +7,6 @@ using TMPro;
 public class AgendaEventButton : MonoBehaviour
 {
     [Header("UI")]
-    public Button button;              // root button on the prefab
     public Image icon;
     public TMP_Text titleText;         // main label (uses EventInfo.label)
     public TMP_Text timeText;          // secondary label (e.g., "Week 6")
@@ -59,11 +58,6 @@ public class AgendaEventButton : MonoBehaviour
                 overflow.BindOverflow(count - toShow);
             }
         }
-
-        if (button)
-        {
-            button.onClick.RemoveAllListeners();
-            if (onClick != null) button.onClick.AddListener(() => onClick());
-        }
+        
     }
 }
