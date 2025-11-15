@@ -1,5 +1,6 @@
 // TextThreadPanel.cs
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 public static class QuickReplyIconLibrary
@@ -30,7 +31,7 @@ public class TextThreadPanel : MonoBehaviour
     public GameObject playerBubblePrefab;   // has Text body (right-aligned)
     public Transform quickReplyRoot;        // horizontal/vertical group for reply buttons
     public GameObject quickReplyButtonPrefab; // has Button + Text + optional Image
-
+    public ProfilePicture[] profiles; 
     Character current;
     [SerializeField] private GameObject root;         // the panel GameObject
     [SerializeField] private CanvasGroup canvasGroup; // optional, if present
@@ -64,75 +65,88 @@ public void Render()
 
     var msgs = TextThreads.GetThread(current);
     QuickReply[] pending = null;
-    string pendingTargetScene = null; // <-- capture the scene from the NPC prompt
+    string pendingTargetScene = null;
 
     foreach (var m in msgs)
     {
         var prefab = m.isPlayer ? playerBubblePrefab : npcBubblePrefab;
-        var go = Instantiate(prefab, contentRoot);
+        var go     = Instantiate(prefab, contentRoot);
 
-        var label = go.GetComponentInChildren<TMPro.TMP_Text>(true);
-        if (label) label.text = m.body ?? "";
+        if (!m.isPlayer)
+        {
+            // Use the instantiated object, not the prefab
+            var bubble = go.GetComponent<SpeechBubble>();
+            if (bubble != null)
+            {
+                // Set the body text
+                if (bubble.textContainer != null)
+                    bubble.textContainer.text = m.body ?? "";
+
+                // Push the NPC profile image down into the bubble
+                if (bubble.image != null && profiles != null)
+                {
+                    for (int i = 0; i < profiles.Length; i++)
+                    {
+                        if (profiles[i].character.Equals(current))
+                        {
+                            bubble.image.sprite  = profiles[i].pictureSmall;
+                            bubble.image.enabled = bubble.image.sprite != null;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        else
+        {
+            // Player bubble: just text
+            var label = go.GetComponentInChildren<TMP_Text>(true);
+            if (label) label.text = m.body ?? "";
+        }
 
         // If this NPC message offers quick replies, remember replies + its target scene
         if (!m.isPlayer && m.quickReplies != null && m.quickReplies.Count > 0)
         {
             pending = m.quickReplies.ToArray();
-// In your TextThreadPanel (or wherever you build quick replies for a thread)
-            bool HasInvite(string sceneName)
-            {
-                var pins = PlayerPrefsExtra.GetList<CharacterLocation>("characterLocations", new List<CharacterLocation>());
-                return pins.Exists(p => string.Equals(p.location, sceneName, System.StringComparison.Ordinal));
-            }
-
-// Before enabling “ok / go” quick-replies:
-            if (!HasInvite(pendingTargetScene))
-            {
-                // Hide or disable the quick reply buttons
-                quickReplyRoot.gameObject.SetActive(false);
-            }
-            
-            pendingTargetScene = m.location; // <-- sceneName key to route to
+            pendingTargetScene = m.location;
         }
     }
 
+    // Build quick replies below...
     if (pending != null && pending.Length > 0)
     {
         foreach (var qr in pending)
         {
             var btnGO = Instantiate(quickReplyButtonPrefab, quickReplyRoot);
 
-            var txt = btnGO.GetComponentInChildren<TMPro.TMP_Text>(true);
+            var txt = btnGO.GetComponentInChildren<TMP_Text>(true);
             if (txt) txt.text = qr.label ?? "";
 
-            // optional icon mapping
-            var img = btnGO.GetComponentInChildren<UnityEngine.UI.Image>(true);
+            var img = btnGO.GetComponentInChildren<Image>(true);
             if (img != null) img.sprite = QuickReplyIconLibrary.Get(qr.iconKey);
 
-            var button = btnGO.GetComponent<UnityEngine.UI.Button>();
+            var button = btnGO.GetComponent<Button>();
             if (button == null) continue;
 
             button.onClick.RemoveAllListeners();
             button.onClick.AddListener(() =>
             {
-                // 1) record player's reply in the thread
                 TextThreads.SendPlayerResponse(current, qr);
 
-                // 2) navigate if the NPC message specified a destination
                 if (!string.IsNullOrWhiteSpace(pendingTargetScene))
                 {
-                    Hide(); // prevent overlay flicker and block raycasts before scene load
+                    Hide();
                     LocationRouter.Go(pendingTargetScene);
                 }
                 else
                 {
-                    // no destination on the prompt; just refresh UI
                     Render();
                 }
             });
         }
     }
 }
+
 
 
 }

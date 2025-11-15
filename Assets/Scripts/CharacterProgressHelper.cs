@@ -59,7 +59,7 @@ public static class CharacterProgressHelper
         StageRouteIndex index, List<CharacterLocation> characterLocations, bool requireFriendToTrack = false)
     {
         var results = new List<AvailableConversation>();
-        if (index == null || index.routes == null) return results;
+        if (index == null || index.Routes == null) return results;
 
         int week = CurrentWeek();
 
@@ -67,7 +67,7 @@ public static class CharacterProgressHelper
         var where = new Dictionary<Character, string>();
         foreach (var cl in characterLocations) where[cl.character] = cl.location;
 
-        foreach (var meta in index.routes)
+        foreach (var meta in index.Routes)
         {
             if (meta.location == null) continue;
 

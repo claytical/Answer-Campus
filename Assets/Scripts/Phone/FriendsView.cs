@@ -18,10 +18,14 @@ public class FriendsView : MonoBehaviour
     public ProfilePicture[] profiles;        // Character -> Sprite mapping (same struct used in TextMessageList)
 
     public Characters contacts;
-//    [Header("Contacts (optional)")]
-//    [Tooltip("If empty, we’ll infer contacts from message threads. If set, we’ll list exactly these.")]
-    //public Character[] contacts;
 
+    void Awake()
+    {
+        if (threadPanel != null)
+        {
+            threadPanel.profiles = profiles; // share the same mapping
+        }
+    }
     // Call this whenever the phone opens Friends tab
     public void Render()
     {
@@ -33,8 +37,6 @@ public class FriendsView : MonoBehaviour
             .GroupBy(m => m.from)
             .ToDictionary(g => g.Key, g => g.OrderBy(m => m.unixTime).ToList()); // oldest->newest
 
-        // Determine who to show: explicit contacts or inferred from threads
-//        var roster = (contacts.profiles.Distinct().ToList(): threadsByCharacter.Keys.Distinct().OrderBy(c => c.ToString()).ToList();
         var roster = threadsByCharacter.Keys.Distinct().OrderBy(c => c.ToString()).ToList();
         // Current locations for “at X” label
         var charLocs = PlayerPrefsExtra.GetList<CharacterLocation>("characterLocations", new List<CharacterLocation>());
@@ -60,6 +62,9 @@ public class FriendsView : MonoBehaviour
             if (vm.profile)
             {
                 var pic = profiles.FirstOrDefault(p => p.character.Equals(who)).pictureLarge;
+                var threadPic = profiles.FirstOrDefault(p => p.character.Equals(who)).pictureSmall;
+                vm.threadProfileImage = threadPic;
+
                 if (pic) vm.profile.sprite = pic;
             }
 

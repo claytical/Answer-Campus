@@ -79,8 +79,8 @@ public static Dictionary<string, Status> Build(Context ctx)
     // (b) From StageRouteIndex (routes reference LocationData)
     foreach (var idx in ctx.npcRouteIndices ?? Array.Empty<StageRouteIndex>())
     {
-        if (idx?.routes == null) continue;
-        foreach (var r in idx.routes)
+        if (idx?.Routes == null) continue;
+        foreach (var r in idx.Routes)
         {
             if (r?.location == null) continue;
             var key = !string.IsNullOrWhiteSpace(r.location.sceneName) ? r.location.sceneName : r.location.name;
@@ -182,8 +182,8 @@ public static Dictionary<string, Status> Build(Context ctx)
             return true; // phone fallback: lockable+invite handles gating
         foreach (var idx in ctx.npcRouteIndices)
         {
-            if (idx?.routes == null) continue;
-            foreach (var r in idx.routes)
+            if (idx?.Routes == null) continue;
+            foreach (var r in idx.Routes)
             {
                 if (r?.location == null) continue;
                 var key = !string.IsNullOrWhiteSpace(r.location.sceneName) ? r.location.sceneName : r.location.name;
