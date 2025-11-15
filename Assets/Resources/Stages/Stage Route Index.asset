@@ -66,9 +66,9 @@ MonoBehaviour:
     stage: 2
     unlockWeek: 9
   - character: 2
-    location: {fileID: 11400000, guid: 61c4b036abc3d411c87452e400441761, type: 2}
+    location: {fileID: 11400000, guid: 13ecdb615fef44fa39beb0c740c54ec6, type: 2}
     stage: 3
-    unlockWeek: 9
+    unlockWeek: 17
   - character: 9
     location: {fileID: 11400000, guid: 61c4b036abc3d411c87452e400441761, type: 2}
     stage: 5
