@@ -32,26 +32,29 @@ namespace VNEngine
             Debug.Log($"[ClassroomRouterNode] Week: {currentWeek}");
 
             // 1) Hard week overrides that DO NOT mutate stage
-            if (currentWeek >= finalWeek && finalConversation != null)
+            // Final preempts everything on its specific week
+            if (currentWeek == finalWeek && finalConversation != null)
             {
-                Debug.Log("Routing to final exam (week-gated).");
+                Debug.Log("Routing to final exam (week-gated, exact match).");
                 finalConversation.Start_Conversation();
                 routed = true;
                 return;
             }
 
-            if (currentWeek >= midtermWeek && midtermConversation != null)
+            // Midterm preempts everything on its specific week
+            if (currentWeek == midtermWeek && midtermConversation != null)
             {
-                Debug.Log("Routing to midterm (week-gated).");
+                Debug.Log("Routing to midterm (week-gated, exact match).");
                 midtermConversation.Start_Conversation();
                 routed = true;
                 return;
             }
 
+            // Otherwise, fall through to whatever comes next in the graph
             go_to_next_node = !routed;
             Finish_Node();
-
         }
+
 
 
         public override void Button_Pressed() { }

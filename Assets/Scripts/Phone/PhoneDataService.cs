@@ -20,8 +20,8 @@ public static class PhoneDataService
         // 1) From any loaded StageRouteIndex assets (authoritative list used by routing)
         foreach (var idx in Resources.LoadAll<StageRouteIndex>(""))
         {
-            if (idx == null || idx.routes == null) continue;
-            foreach (var r in idx.routes)
+            if (idx == null || idx.Routes == null) continue;
+            foreach (var r in idx.Routes)
                 if (r != null && r.location != null && !string.IsNullOrWhiteSpace(r.location.name))
                     names.Add(r.location.name);
         }

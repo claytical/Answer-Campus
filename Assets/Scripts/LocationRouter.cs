@@ -15,13 +15,7 @@ public static class LocationRouter
             Debug.LogWarning("[LocationRouter] Go called with empty sceneName");
             return;
         }
-
-        // Clear any invite pointing at this scene (all characters)
-        var pins = PlayerPrefsExtra.GetList<CharacterLocation>("characterLocations", new List<CharacterLocation>());
-        int removed = pins.RemoveAll(p => string.Equals(p.location, sceneName, System.StringComparison.Ordinal));
-        PlayerPrefsExtra.SetList("characterLocations", pins);
-        if (removed > 0) Debug.Log($"[LocationRouter] Cleared {removed} invite(s) for {sceneName}.");
-
+        
         SceneManager.LoadScene(sceneName);
     }
 
@@ -34,13 +28,9 @@ public static class LocationRouter
             return;
         }
 
-        var pins = PlayerPrefsExtra.GetList<CharacterLocation>("characterLocations", new List<CharacterLocation>());
-        int removed = pins.RemoveAll(p =>
-            string.Equals(p.location, sceneName, System.StringComparison.Ordinal) &&
-            EqualityComparer<Character>.Default.Equals(p.character, character));
-
-        PlayerPrefsExtra.SetList("characterLocations", pins);
-        if (removed > 0) Debug.Log($"[LocationRouter] Cleared invite for {character} @ {sceneName}.");
+        // Record some context if you want, but DO NOT clear pins here.
+        PlayerPrefs.SetString("LastRouteScene", sceneName);
+        PlayerPrefs.SetString("LastRouteCharacter", character.ToString());
 
         SceneManager.LoadScene(sceneName);
     }

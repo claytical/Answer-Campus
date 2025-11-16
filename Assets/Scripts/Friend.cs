@@ -9,29 +9,17 @@ public enum Relationship { FRIEND, BFF };
 [System.Serializable]
 public enum Character { NONE, LEILANI, DEEPAK, SOFIA, BREANNA, MATTHEW, BEAU, ERIC, JIAH, CHARLI, JOSE, BRAD }
 
-/*
-[System.Serializable]
-public struct FriendRelationship
-{
-    public string friend;
-    public Relationship relationship;
-}
-*/
-
 [System.Serializable]
 public class Friend { 
 
     public Relationship relationship;
     public string characterName;
     public string scene;
-    //image might be obsolete
     public Image status;
     public Sprite[] statusTypes;
 
     private int relationshipLevel;
-
-    // Start is called before the first frame update
-    // Start is called before the first frame update
+    
     void Start()
     {
         // Load relationship status from StatsManager
@@ -77,5 +65,46 @@ public class Friend {
     {
         return StatsManager.Get_String_Stat(characterName + "_last_scene");
     }
+    /// <summary>
+    /// Returns true if this Character has been added as a contact
+    /// (i.e., NodeContact / Friend.AddToContacts set the _is_friend flag).
+    /// </summary>
+    public static bool IsFriend(Character character)
+    {
+        if (character == Character.NONE) return false;
 
+        string key = character.ToString() + "_is_friend"; // must match NodeContact
+        bool value = StatsManager.Get_Boolean_Stat(key);
+        Debug.Log($"[Friend] IsFriend({character}) -> {value} (key={key})");
+        return value;
+    }
+
+
+    /// <summary>
+    /// Convenience overload when you only have the character's name string.
+    /// </summary>
+    public static bool IsFriend(string characterName)
+    {
+        Debug.Log($"[FRIENDSHIP] Checking {characterName}");
+        if (string.IsNullOrWhiteSpace(characterName)) return false;
+        string key = characterName + "_is_friend";
+        return StatsManager.Get_Boolean_Stat(key);
+    }
+
+    /// <summary>
+    /// Returns a list of all Characters currently marked as contacts.
+    /// </summary>
+    public static List<Character> GetAllFriends()
+    {
+        var list = new List<Character>();
+
+        foreach (Character c in System.Enum.GetValues(typeof(Character)))
+        {
+            if (c == Character.NONE) continue;
+            if (IsFriend(c))
+                list.Add(c);
+        }
+
+        return list;
+    }
 }

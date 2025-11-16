@@ -23,11 +23,7 @@ namespace VNEngine
 
             var pins = PlayerPrefsExtra.GetList<CharacterLocation>("characterLocations", new List<CharacterLocation>());
 
-            // Always dedupe for this character+scene first
-            pins.RemoveAll(p =>
-                EqualityComparer<Character>.Default.Equals(p.character, character) &&
-                string.Equals(p.location, locationScene, System.StringComparison.Ordinal));
-
+            pins.RemoveAll(p => EqualityComparer<Character>.Default.Equals(p.character, character));
             if (addLocationToMap)
             {
                 pins.Add(new CharacterLocation { character = character, location = locationScene });

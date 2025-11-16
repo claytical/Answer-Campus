@@ -6,6 +6,7 @@ using VNEngine;
 using System;
 using System.Linq;
 using System.Collections.Generic;
+using TMPro.SpriteAssetUtilities;
 using UnityEngine;
 
 // A single-pass "truth" about what the phone/fullscreen map should show right now.
@@ -55,11 +56,12 @@ public static Dictionary<string, Status> Build(Context ctx)
         footballInteractable = (g != null && ctx.isHomeGame(g) && !ctx.gamePlayed(g));
     }
 
-    // --- NEW: Build a map from scene key -> displayName/icon from LocationData assets ---
+    // --- Build a map from scene key -> displayName/icon from LocationData assets ---
     var displayNameByKey = new Dictionary<string, string>(StringComparer.Ordinal);
     var iconByKey        = new Dictionary<string, Sprite>(StringComparer.Ordinal);
 
-    var allLocationAssets = Resources.LoadAll<LocationData>("");  // authority
+    // (a) From LocationData assets (authority)
+    var allLocationAssets = Resources.LoadAll<LocationData>("");
     foreach (var ld in allLocationAssets)
     {
         if (ld == null) continue;
@@ -123,19 +125,28 @@ public static Dictionary<string, Status> Build(Context ctx)
         if (!string.IsNullOrWhiteSpace(cl.location))
             allNames.Add(cl.location);
 
-    // Persist the universe once (optional, as you already had)
+    // Persist the universe once (optional)
     try
     {
         PlayerPrefsExtra.SetList("registryLocationNames", allNames.ToList());
         PlayerPrefs.Save();
     }
-    catch (Exception e) { Debug.LogWarning($"[MapAvailability] persist registryLocationNames failed: {e.Message}"); }
+    catch (Exception e)
+    {
+        Debug.LogWarning($"[MapAvailability] persist registryLocationNames failed: {e.Message}");
+    }
 
     // 2) Lookups
+
+    // Pins: location -> distinct characters
     var pinsByLoc = (ctx.characterPins ?? Array.Empty<CharacterLocation>())
         .Where(p => !string.IsNullOrWhiteSpace(p.location))
         .GroupBy(p => p.location)
-        .ToDictionary(g => g.Key, g => g.Select(p => p.character).Distinct().ToList(), StringComparer.Ordinal);
+        .ToDictionary(
+            g => g.Key,
+            g => g.Select(p => p.character).Distinct().ToList(),
+            StringComparer.Ordinal
+        );
 
     // Lockables (big map writes, phone reads)
     var lockableNames = new HashSet<string>(StringComparer.Ordinal);
@@ -161,9 +172,13 @@ public static Dictionary<string, Status> Build(Context ctx)
         try
         {
             var persisted = PlayerPrefsExtra.GetList<string>("lockableLocationNames", new List<string>());
-            foreach (var n in persisted) if (!string.IsNullOrWhiteSpace(n)) lockableNames.Add(n);
+            foreach (var n in persisted)
+                if (!string.IsNullOrWhiteSpace(n)) lockableNames.Add(n);
         }
-        catch (Exception e) { Debug.LogWarning($"[MapAvailability] load lockables failed: {e.Message}"); }
+        catch (Exception e)
+        {
+            Debug.LogWarning($"[MapAvailability] load lockables failed: {e.Message}");
+        }
     }
     else
     {
@@ -172,10 +187,47 @@ public static Dictionary<string, Status> Build(Context ctx)
             PlayerPrefsExtra.SetList("lockableLocationNames", lockableNames.ToList());
             PlayerPrefs.Save();
         }
-        catch (Exception e) { Debug.LogWarning($"[MapAvailability] persist lockables failed: {e.Message}"); }
+        catch (Exception e)
+        {
+            Debug.LogWarning($"[MapAvailability] persist lockables failed: {e.Message}");
+        }
     }
 
-    // 3) Route window helper
+    // 2b) Per-character, per-location unlockWeek lookup
+    // (CHARACTER, locationKey) -> earliest unlockWeek > 0 for that pairing
+    var unlockByCharLoc = new Dictionary<Tuple<Character, string>, int>();
+
+    foreach (var idx in ctx.npcRouteIndices ?? Array.Empty<StageRouteIndex>())
+    {
+        if (idx == null || idx.Routes == null) continue;
+        
+        foreach (var r in idx.Routes)
+        {
+            if (r?.location == null) continue;
+            var who = r.character;
+            if (who == Character.NONE) continue;
+            var key = !string.IsNullOrWhiteSpace(r.location.sceneName)
+                ? r.location.sceneName
+                : r.location.name;
+            if (string.IsNullOrWhiteSpace(key)) continue;
+
+            var unlockWeek = r.unlockWeek; // <=0 means "no gate"
+
+            var tuple = Tuple.Create(who, key);
+            if (!unlockByCharLoc.TryGetValue(tuple, out var existing))
+            {
+                unlockByCharLoc[tuple] = unlockWeek;
+            }
+            else
+            {
+                // keep earliest positive gate; allow 0 to mean "always"
+                if (unlockWeek > 0 && (existing <= 0 || unlockWeek < existing))
+                    unlockByCharLoc[tuple] = unlockWeek;
+            }
+        }
+    }
+
+    // 3) Route window helper (location-level gating for lockables)
     bool IsInRouteWindow(string locName)
     {
         if (ctx.npcRouteIndices == null || !ctx.npcRouteIndices.Any())
@@ -200,10 +252,11 @@ public static Dictionary<string, Status> Build(Context ctx)
         var st = new Status
         {
             locationName = name,
-            displayName  = displayNameByKey.TryGetValue(name, out var dn) ? dn : name, 
-            mapIcon         = iconByKey.TryGetValue(name, out var ic) ? ic : null
+            displayName  = displayNameByKey.TryGetValue(name, out var dn) ? dn : name,
+            mapIcon      = iconByKey.TryGetValue(name, out var ic) ? ic : null
         };
 
+        // Base interactability
         if (!lockableNames.Contains(name))
         {
             st.interactable = true;
@@ -217,7 +270,7 @@ public static Dictionary<string, Status> Build(Context ctx)
             st.lockReason   = st.interactable ? LockReason.None : LockReason.InviteOnly;
         }
 
-        // Football & Shuttle gating
+        // Football & Shuttle gating override
         if (name.Equals("Football Game", StringComparison.OrdinalIgnoreCase) ||
             name.Equals("Shuttle", StringComparison.OrdinalIgnoreCase))
         {
@@ -225,10 +278,33 @@ public static Dictionary<string, Status> Build(Context ctx)
             st.lockReason   = st.interactable ? LockReason.None : LockReason.TimeGated;
         }
 
-        if (pinsByLoc.TryGetValue(name, out var friends))
+        // Presence from pins, week-gated per character
+        if (pinsByLoc.TryGetValue(name, out var occupants))
         {
-            st.hasFriendChip = friends.Count > 0;
-            st.friends = friends;
+            var tracked = new List<Character>();
+
+            foreach (var c in occupants)
+            {
+                // Respect requireFriendToTrack if requested (phone map)
+                if (ctx.requireFriendToTrack && !Friend.IsFriend(c))
+                    continue;
+
+                var tuple = Tuple.Create(c, name);
+
+                // If we have a specific unlockWeek for (c, this location), enforce it.
+                if (unlockByCharLoc.TryGetValue(tuple, out var unlockWeek) &&
+                    unlockWeek > 0 &&
+                    ctx.currentWeek < unlockWeek)
+                {
+                    // Character's route for this location hasn't opened yet → don't show them
+                    continue;
+                }
+
+                tracked.Add(c);
+            }
+
+            st.friends      = tracked;
+            st.hasFriendChip = tracked.Count > 0;
         }
 
         result[name] = st;
@@ -272,35 +348,96 @@ public class Map : MonoBehaviour
 
     var snapshot = MapAvailability.Build(ctx);
 
-    // Now just apply it to the scene UI like you already do:
-    foreach (var loc in allLocations)
+foreach (var loc in allLocations)
+{
+    // Resolve key: must match what MapAvailability.Build used
+    string name = null;
+    if (!string.IsNullOrWhiteSpace(loc.scene))
+        name = loc.scene;
+    else if (loc.data && !string.IsNullOrWhiteSpace(loc.data.sceneName))
+        name = loc.data.sceneName;
+    else if (loc.data && !string.IsNullOrWhiteSpace(loc.data.name))
+        name = loc.data.name;
+    else
+        name = loc.name;
+
+    if (!snapshot.TryGetValue(name, out var st))
     {
-        var name = !string.IsNullOrWhiteSpace(loc.scene) ? loc.scene
-                  : (loc.data != null ? loc.data.name : loc.name);
+        Debug.Log($"[MAP] No snapshot status for {name}");
+        continue;
+    }
 
-        if (!snapshot.TryGetValue(name, out var st)) continue;
+    // --- DEBUG: what does the map think is here? ---
+    var friendsList = (st.friends == null || st.friends.Count == 0)
+        ? "none"
+        : string.Join(", ", st.friends.Select(c => c.ToString()));
+    Debug.Log($"[MAP] {name}: hasFriendChip={st.hasFriendChip}, friends=[{friendsList}], lock={st.lockReason}, interactable={st.interactable}, characterWaiting={(loc.characterWaiting ? "YES" : "NO")}");
 
-        // Button interactable
-        var btn = loc.GetComponent<Button>();
-        if (btn) btn.interactable = st.interactable;
+    // Button interactable
+    var btn = loc.GetComponent<Button>();
+    if (btn) btn.interactable = st.interactable;
 
-        // Portraits for presence (independent of availability)
-        if (loc.characterWaiting)
+    // Portraits for presence (independent of availability)
+    if (loc.characterWaiting)
+    {
+        if (st.friends == null || st.friends.Count == 0)
         {
-            var who = st.friends.FirstOrDefault(); // or keep your per-profile loop
-            var profile = Array.Find(characters.profiles, p => p.character == who);
-            if (profile.pictureLarge != null)
+            // Nothing to show here
+            loc.characterWaiting.gameObject.SetActive(false);
+        }
+        else
+        {
+            Character who = Character.NONE;
+
+            // 1) Prefer a friend who actually has a pictureLarge
+            foreach (var c in st.friends)
             {
+                var p = Array.Find(characters.profiles, prof => prof.character == c);
+                bool isFriend = Friend.IsFriend(c);
+                bool hasPic   = (p.pictureLarge != null);
+                Debug.Log($"[MAP] Candidate for {name}: {c}, isFriend={isFriend}, pictureLarge={hasPic}");
+
+                if (isFriend && hasPic)
+                {
+                    who = c;
+                    break;
+                }
+            }
+
+            // 2) Fallback: any occupant with a usable portrait
+            if (who == Character.NONE)
+            {
+                foreach (var c in st.friends)
+                {
+                    var p = Array.Find(characters.profiles, prof => prof.character == c);
+                    if (p.pictureLarge != null)
+                    {
+                        who = c;
+                        break;
+                    }
+                }
+            }
+
+            if (who != Character.NONE)
+            {
+                var profile = Array.Find(characters.profiles, p => p.character == who);
+                Debug.Log($"[MAP] Final icon for {name}: {who}, pictureLarge={(profile.pictureLarge != null)}");
                 loc.characterWaiting.sprite = profile.pictureLarge;
                 loc.characterWaiting.gameObject.SetActive(st.hasFriendChip);
             }
-            else loc.characterWaiting.gameObject.SetActive(false);
+            else
+            {
+                Debug.Log($"[MAP] No usable portrait for {name}, hiding icon.");
+                loc.characterWaiting.gameObject.SetActive(false);
+            }
         }
-
-        // "Available" badge
-        var badge = loc.transform.Find("AvailableBadge");
-        if (badge) badge.gameObject.SetActive(st.hasAvailableConversation);
     }
+
+    // "Available" badge
+    var badge = loc.transform.Find("AvailableBadge");
+    if (badge) badge.gameObject.SetActive(st.hasAvailableConversation);
+}
+
 }
 
 }

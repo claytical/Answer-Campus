@@ -39,6 +39,7 @@ public override void Run_Node()
     int currentWeek = Mathf.RoundToInt(StatsManager.Get_Numbered_Stat("Week"));
     List<CharacterLocation> characterLocations = PlayerPrefsExtra.GetList<CharacterLocation>("characterLocations", new List<CharacterLocation>());
     CharacterLocation? selected = null;
+    Debug.Log($"[ROUTER] {characterLocations.Count} Character Locations");
     // Find the first character placed on the map for this scene
     foreach (CharacterLocation loc in characterLocations)
     {
@@ -82,9 +83,19 @@ public override void Run_Node()
                     FMODAudioManager.Instance.SetDrums(2);
                 else
                     FMODAudioManager.Instance.SetDrums(3);
+                var pins = PlayerPrefsExtra.GetList<CharacterLocation>("characterLocations", new List<CharacterLocation>());
+                int removed = pins.RemoveAll(p =>
+                    string.Equals(p.location, currentSceneName, System.StringComparison.Ordinal) &&
+                    EqualityComparer<Character>.Default.Equals(p.character, loc.character));
 
+                PlayerPrefsExtra.SetList("characterLocations", pins);
+                if (removed > 0)
+                    Debug.Log($"[LocationRouter] Cleared invite for {loc.character} @ {currentSceneName} after routing.");
                 route.conversation.Start_Conversation();
+                go_to_next_node = false;
+
                 Finish_Node();
+
                 return;
             }
         }

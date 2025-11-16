@@ -8,6 +8,8 @@ public class ClickOutsideToClose : MonoBehaviour,
 {
     [Header("Behavior")]
     public bool ContinueConversationOnClick = false;
+
+    public GameObject rootObjectToClose;
     public GameObject defaultSelectionOnClose;
 
     // internal state
@@ -61,7 +63,7 @@ public class ClickOutsideToClose : MonoBehaviour,
     private void Close()
     {
         // Deactivate the modal root
-        gameObject.SetActive(false);
+        rootObjectToClose.SetActive(false);
 
         // Optionally resume VNEngine waiting nodes
         if (ContinueConversationOnClick)

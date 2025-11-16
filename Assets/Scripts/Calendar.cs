@@ -84,7 +84,7 @@ public class FootballGameListWrapper
 public static class SemesterHelper
 {
     public const int FinalsWeek = 15;
-    public const int MidtermsWeek = 7;
+    public const int MidtermsWeek = 6;
     public const int MidtermsWarningStart = 4;
     public const int FinalsWarningStart = 5;
     public const int DaysPerWeek = 7;
@@ -275,10 +275,12 @@ public class Calendar : MonoBehaviour
             Instantiate(checkmark, calendarGrid);
         }
 */
+/*
         if (week == SemesterHelper.FinalsWeek)
         {
             finalExamLocation.GoToLocation();
         }
+        */
         foreach (var evt in GameEvents.GetWeekPreview(week))
             Debug.Log($"[Calendar Preview] Week {evt.week}: {evt.type} - {evt.label} @ {evt.location}");
 
