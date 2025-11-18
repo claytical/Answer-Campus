@@ -1828,6 +1828,11 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 050186d06c7d3ba4ebfcd126475dd89e, type: 3}
+--- !u!224 &72059954 stripped
+RectTransform:
+  m_CorrespondingSourceObject: {fileID: 7509519032867895242, guid: 050186d06c7d3ba4ebfcd126475dd89e, type: 3}
+  m_PrefabInstance: {fileID: 72059953}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &81683248
 GameObject:
   m_ObjectHideFlags: 0
@@ -9711,6 +9716,11 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 050186d06c7d3ba4ebfcd126475dd89e, type: 3}
+--- !u!224 &399253407 stripped
+RectTransform:
+  m_CorrespondingSourceObject: {fileID: 7509519032867895242, guid: 050186d06c7d3ba4ebfcd126475dd89e, type: 3}
+  m_PrefabInstance: {fileID: 399253406}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &409183689
 GameObject:
   m_ObjectHideFlags: 0
@@ -84899,7 +84909,7 @@ MonoBehaviour:
   entrance_type: 1
   fade_in_time: 0.1
   destination: 3
-  custom_position: {fileID: 0}
+  custom_position: {fileID: 72059954}
 --- !u!1 &6109006570331412230
 GameObject:
   m_ObjectHideFlags: 0
@@ -88438,7 +88448,7 @@ MonoBehaviour:
   entrance_type: 1
   fade_in_time: 0.1
   destination: 3
-  custom_position: {fileID: 0}
+  custom_position: {fileID: 399253407}
 --- !u!82 &6833291892194047720
 AudioSource:
   m_ObjectHideFlags: 0
@@ -95121,7 +95131,7 @@ MonoBehaviour:
   fetch_localized_stat_value: 0
   dialogue_from: 0
   localized_key: 
-  text: 'Nice to meet you [players Name]'
+  text: Nice to meet you [s:Player Name]!
   talking_beeps: {fileID: 0}
   darken_all_other_characters: 1
   bring_speaker_to_front: 1
@@ -95544,7 +95554,7 @@ MonoBehaviour:
   fetch_localized_stat_value: 0
   dialogue_from: 0
   localized_key: 
-  text: 'Nice to meet you [Player Name]'
+  text: Nice to meet you, [s:Player Name].
   talking_beeps: {fileID: 0}
   darken_all_other_characters: 1
   bring_speaker_to_front: 1
@@ -96119,7 +96129,6 @@ Transform:
   - {fileID: 8213363609136690390}
   - {fileID: 8213363608994260553}
   - {fileID: 8213363609472518305}
-  - {fileID: 8213363609253264250}
   m_Father: {fileID: 8213363610450045788}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &8213363609210228419
@@ -96135,57 +96144,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   destroy_when_finished: 0
-  start_conversation_when_done: {fileID: 0}
+  start_conversation_when_done: {fileID: 282285652}
   cur_node: 0
   active: 0
   finished_conversation: 0
---- !u!1 &8213363609253264245
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 8213363609253264250}
-  - component: {fileID: 8213363609253264251}
-  m_Layer: 0
-  m_Name: Repeat Conversation
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &8213363609253264250
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8213363609253264245}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 8213363609210228418}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &8213363609253264251
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8213363609253264245}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4dba8ebeeac6fa14d90358a78deed2dc, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  go_to_next_node: 1
-  executed_from_load: 0
-  conversation_to_start: {fileID: 8213363609173562755}
 --- !u!4 &8213363609293403720
 Transform:
   m_ObjectHideFlags: 0
@@ -97410,7 +97372,7 @@ MonoBehaviour:
   entrance_type: 1
   fade_in_time: 1
   destination: 3
-  custom_position: {fileID: 0}
+  custom_position: {fileID: 72059954}
 --- !u!114 &8213363609945451508
 MonoBehaviour:
   m_ObjectHideFlags: 0
