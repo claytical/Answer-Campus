@@ -16,48 +16,44 @@ public class AgendaEventButton : MonoBehaviour
     public FriendChip attendeeChipPrefab; // optional
     public int maxAttendeeChips = 6;
 
-    public void Bind(
-        string title, EventType eventType,
-        List<Character> attendees,
+public void Bind(
+        string title,
+        EventType eventType,
+        bool isPast,
         Action onClick)
     {
-        if (titleText) titleText.text = title ?? "";
+        // Title: strike-through and grey when in the past
+        if (titleText)
+        {
+            // TMP supports rich text <s> for strike-through
+            titleText.text = isPast ? $"<s>{title}</s>" : title ?? "";
+            titleText.alpha = isPast ? 0.6f : 1f;
+        }
+
+        // Optional: tint icon or choose different sprites per type
         switch (eventType)
         {
             case EventType.FootballHomeGame:
+                // set football icon if you have one
                 break;
             case EventType.Custom:
+                // optional: custom event icon
                 break;
             case EventType.Finals:
                 break;
             case EventType.Midterms:
-//                if(icon) icon.sprite = ;
                 break;
         }
-        //        if (timeText)  timeText.text  = timeLabel ?? "";
 
-        // Attendees (optional)
-        if (attendeesRoot && attendeeChipPrefab)
+        // Disable clicking on past events
+        var btn = GetComponent<UnityEngine.UI.Button>();
+        if (btn)
         {
-            for (int i = attendeesRoot.childCount - 1; i >= 0; i--)
-                Destroy(attendeesRoot.GetChild(i).gameObject);
+            btn.onClick.RemoveAllListeners();
+            if (!isPast && onClick != null)
+                btn.onClick.AddListener(() => onClick());
 
-            var count = attendees?.Count ?? 0;
-            var toShow = Mathf.Min(count, Mathf.Max(0, maxAttendeeChips));
-
-            for (int i = 0; i < toShow; i++)
-            {
-                var chip = Instantiate(attendeeChipPrefab, attendeesRoot);
-                // If you don’t want names here, pass "" to show icon-only later
-                chip.Bind(attendees[i], portrait: null, displayNameOverride: "");
-            }
-
-            if (count > toShow)
-            {
-                var overflow = Instantiate(attendeeChipPrefab, attendeesRoot);
-                overflow.BindOverflow(count - toShow);
-            }
+            btn.interactable = !isPast;
         }
-        
     }
 }

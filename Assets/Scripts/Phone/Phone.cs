@@ -27,8 +27,8 @@ public class Phone : MonoBehaviour
     {
         anim = GetComponent<Animator>();
         RefreshNotificationBadge();
-        ShowMap(); // default
-        
+        ShowFriends(); // default
+        friendsView.headerText = title;
     }
 
     // ---- Public tab actions (UI buttons) ----

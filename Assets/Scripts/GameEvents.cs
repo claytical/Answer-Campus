@@ -12,6 +12,7 @@ public class CustomEvent
     public Sprite icon;
     public string location;    // scene name
     public bool unlocked;      // set true when a convo unlocks it
+    public bool completed; 
 }
 
 [Serializable]
@@ -21,6 +22,7 @@ public enum EventType { Midterms, Finals, FootballHomeGame, Custom }
 [Serializable]
 public struct EventInfo
 {
+    public string id;
     public EventType type;
     public string label;     // display label
     public int week;
@@ -55,6 +57,31 @@ public static class GameEvents
         if (idx >= 0) items[idx] = ev; else items.Add(ev);
         SaveCustomEvents(items);
     }
+    public static bool IsCustomEventCompleted(string id)
+    {
+        foreach (var ev in LoadCustomEvents())
+            if (ev.id == id)
+                return ev.completed;
+        return false;
+    }
+    public static string BuildStageRouteEventId(Character character, string sceneName, int stage)
+    {
+        // Human-readable but stable
+        return $"{character}_{sceneName}_Stage{stage}";
+    }
+
+    public static void MarkCustomEventCompleted(string id)
+    {
+        var items = LoadCustomEvents();
+        int i = items.FindIndex(e => e.id == id);
+        if (i >= 0)
+        {
+            var ev = items[i];
+            ev.completed = true;
+            items[i] = ev;
+            SaveCustomEvents(items);
+        }
+    }
 
     public static List<EventInfo> GetWeekPreview(int week)
     {
@@ -85,6 +112,7 @@ public static class GameEvents
             if (ev.unlocked && ev.week == week)
             {
                 outList.Add(new EventInfo {
+                    id = ev.id,
                     type = EventType.Custom,
                     label = ev.name,
                     week = ev.week,

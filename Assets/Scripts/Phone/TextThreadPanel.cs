@@ -52,7 +52,7 @@ public class TextThreadPanel : MonoBehaviour
             for (int i = contentRoot.childCount - 1; i >= 0; i--) Destroy(contentRoot.GetChild(i).gameObject);
         if (quickReplyRoot)
             for (int i = quickReplyRoot.childCount - 1; i >= 0; i--) Destroy(quickReplyRoot.GetChild(i).gameObject);
-
+            
         if (canvasGroup) { canvasGroup.alpha = 0; canvasGroup.interactable = false; canvasGroup.blocksRaycasts = false; }
         if (root) root.SetActive(false);
     }
@@ -144,6 +144,12 @@ public void Render()
                 }
             });
         }
+        quickReplyRoot.gameObject.SetActive(true);
+
+    }
+    else
+    {
+        quickReplyRoot.gameObject.SetActive(false);
     }
 }
 

@@ -18,7 +18,7 @@ public class FriendsView : MonoBehaviour
     public ProfilePicture[] profiles;        // Character -> Sprite mapping (same struct used in TextMessageList)
 
     public Characters contacts;
-
+    public TextMeshProUGUI headerText;
     void Awake()
     {
         if (threadPanel != null)
@@ -102,6 +102,7 @@ public class FriendsView : MonoBehaviour
     {
         if (listRoot) listRoot.gameObject.SetActive(false);
         if (threadPanel)   threadPanel.Show(who);
+        headerText.text = who.ToString();
     }
     public void HideThread() { if (threadPanel) threadPanel.Hide(); }
 }

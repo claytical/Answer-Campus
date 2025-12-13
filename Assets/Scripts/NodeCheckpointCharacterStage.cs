@@ -14,6 +14,9 @@ namespace VNEngine
         public string scene;             // e.g., "Library"
         public int stage = -1;           // e.g., 2 sets to "Breanna - Library - Stage" = 2
         public bool skipWeeks = false;
+        [Header("Route & Agenda")]
+        public StageRouteIndex stageRouteIndex;
+        public bool completeAgendaEvent = false;
 
         public override void Run_Node()
         {
@@ -22,11 +25,31 @@ namespace VNEngine
             Debug.Log($"[Checkpoint] Set {stageKey} to {stage}");
 
             // Always update characterLocations
-            var list = PlayerPrefsExtra.GetList<CharacterLocation>("characterLocations", new List<CharacterLocation>());
+            var list = PlayerPrefsExtra.GetList<CharacterLocation>(
+                "characterLocations",
+                new List<CharacterLocation>());
+
             list.RemoveAll(cl => cl.character == character);
             list.Add(new CharacterLocation { character = character, location = scene });
             PlayerPrefsExtra.SetList("characterLocations", list);
             Debug.Log($"[Checkpoint] Added {character} to {scene} in characterLocations");
+
+            // Validate against StageRouteIndex
+            if (stageRouteIndex != null &&
+                !stageRouteIndex.HasRoute(character, scene, stage))
+            {
+                Debug.LogWarning(
+                    $"[Checkpoint] No StageRouteIndex route for {character} @ '{scene}' stage {stage}. " +
+                    "Check for typos or missing index entry.");
+            }
+
+            // Optionally mark the agenda event completed
+            if (completeAgendaEvent)
+            {
+                string eventId = GameEvents.BuildStageRouteEventId(character, scene, stage);
+                GameEvents.MarkCustomEventCompleted(eventId);
+                Debug.Log($"[Checkpoint] Marked agenda event completed: {eventId}");
+            }
 
             // Conditionally advance the week
             if (skipWeeks)

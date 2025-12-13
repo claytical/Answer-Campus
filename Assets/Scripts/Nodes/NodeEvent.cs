@@ -1,36 +1,73 @@
+using System.Linq;
 using UnityEngine;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine.UI;
 
 namespace VNEngine
 {
-    // Not used in real code. Merely a template to copy and paste from when creating new nodes.
     public class NodeEvent : Node
     {
+        [Tooltip("Display for Agenda")]
         public EventInfo information;
 
-        // Called initially when the node is run, put most of your logic here
+        // Called when the node is run in a conversation
+        private string customId;
         public override void Run_Node()
         {
+            // Force this to be treated as a Custom event, regardless of what’s in the inspector
+            information.type = EventType.Custom;
 
-            //TaskManager.Instance.CompleteTask(taskTitle);
+            var ev = new CustomEvent
+            {
+                id       = GetOrGenerateId(),
+                name     = string.IsNullOrWhiteSpace(information.label)
+                           ? "Unnamed Event"
+                           : information.label,
+                week     = information.week,
+                icon     = information.icon,
+                location = information.location,
+                unlocked = true
+            };
+
+            GameEvents.RegisterOrUpdateCustomEvent(ev);
+            Debug.Log(
+                $"[NodeEvent] Registered custom agenda event '{ev.name}' " +
+                $"(id={ev.id}, week={ev.week}, location={ev.location})");
+
             Finish_Node();
         }
 
-
-        // What happens when the user clicks on the dialogue text or presses spacebar? Either nothing should happen, or you call Finish_Node to move onto the next node
-        public override void Button_Pressed()
+        /// <summary>
+        /// Generate a stable-ish ID if the writer didn’t supply one.
+        /// </summary>
+        private string GetOrGenerateId()
         {
-            //Finish_Node();
+            if (!string.IsNullOrEmpty(customId))
+                return customId;
+
+            // Sanitize label to something ID-friendly
+            string labelPart = string.IsNullOrEmpty(information.label)
+                ? "Event"
+                : information.label;
+
+            labelPart = new string(labelPart
+                .Where(c => char.IsLetterOrDigit(c) || c == '_')
+                .ToArray());
+
+            if (string.IsNullOrEmpty(labelPart))
+                labelPart = "Event";
+
+            return $"Custom_{information.week}_{labelPart}";
         }
 
+        // No click behavior – this node is fire-and-forget
+        public override void Button_Pressed()
+        {
+            // Intentionally empty
+        }
 
-        // Do any necessary cleanup here, like stopping coroutines that could still be running and interfere with future nodes
         public override void Finish_Node()
         {
             StopAllCoroutines();
-
             base.Finish_Node();
         }
     }

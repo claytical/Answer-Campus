@@ -6,11 +6,39 @@ public class FriendChip : MonoBehaviour
 {
     public Image icon;
     public TextMeshProUGUI friendName;
+    // Cache the Characters lookup so we only FindObjectOfType once.
+    private static Characters _charactersCache;
 
+    private static Sprite LookupPortrait(Character who)
+    {
+        if (_charactersCache == null)
+        {
+            _charactersCache = GameObject.FindObjectOfType<Characters>();
+        }
+
+        if (_charactersCache == null || _charactersCache.profiles == null)
+            return null;
+
+        // Adjust field names to whatever your ProfilePicture struct actually uses.
+        foreach (var p in _charactersCache.profiles)
+        {
+            // Example: assuming ProfilePicture has "public Character character; public Sprite sprite;"
+            if (p.character == who)
+                return p.pictureLarge;
+        }
+
+        return null;
+    }
     /// <summary>Bind this chip to a Character. 
     /// If you have a portrait lookup later, pass it in; otherwise leave null.</summary>
     public void Bind(Character who, Sprite portrait = null, string displayNameOverride = null)
     {
+        // If nothing was passed in, try to resolve from Characters
+        if (portrait == null)
+        {
+            portrait = LookupPortrait(who);
+        }
+
         if (friendName) friendName.text = string.IsNullOrEmpty(displayNameOverride) ? who.ToString() : displayNameOverride;
         if (icon)
         {

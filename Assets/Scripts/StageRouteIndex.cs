@@ -19,6 +19,51 @@ public class StageRouteIndex : ScriptableObject
     [SerializeField]
     private List<StageRouteMeta> routes = new List<StageRouteMeta>();
     public IReadOnlyList<StageRouteMeta> Routes => routes;
+    public StageRouteMeta FindRoute(Character character, string sceneName, int stage)
+    {
+        if (Routes == null) return null;
+
+        foreach (var meta in Routes)
+        {
+            if (meta == null || meta.location == null) continue;
+
+            // Adjust the property if your LocationData calls it something else
+            var locName = meta.location.sceneName;
+            if (meta.character == character &&
+                meta.stage == stage &&
+                locName == sceneName)
+            {
+                return meta;
+            }
+        }
+
+        return null;
+    }
+    public IReadOnlyList<StageRouteMeta> GetRoutesForScene(string sceneName)
+    {
+        if (Routes == null || string.IsNullOrEmpty(sceneName))
+            return Array.Empty<StageRouteMeta>();
+
+        var list = new List<StageRouteMeta>();
+        foreach (var meta in Routes)
+        {
+            if (meta == null || meta.location == null) continue;
+
+            // Adjust this if your LocationData uses a different field name
+            var locName = meta.location.sceneName;
+            if (string.Equals(locName, sceneName, StringComparison.Ordinal))
+            {
+                list.Add(meta);
+            }
+        }
+        return list;
+    }
+
+    public bool HasRoute(Character character, string sceneName, int stage)
+    {
+        return FindRoute(character, sceneName, stage) != null;
+    }
+
 #if UNITY_EDITOR
     private void OnValidate()
     {
