@@ -355,7 +355,7 @@ namespace VNEngine
         }
 
 
-        public string Insert_Stats_into_Text(string in_text)
+        public static string Insert_Stats_into_Text(string in_text)
         {
             // Find any [ ] characters
             string[] splits = in_text.Split('[', ']');

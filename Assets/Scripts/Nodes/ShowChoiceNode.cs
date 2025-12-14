@@ -73,7 +73,7 @@ namespace VNEngine
                 btn.gameObject.SetActive(true);
                 btn.interactable = true;
                 btn.onClick.RemoveAllListeners();
-                btn.GetComponentInChildren<Text>().text = c.text;
+                btn.GetComponentInChildren<Text>().text = DialogueNode.Insert_Stats_into_Text(c.text);
 
                 btn.onClick.AddListener(() => OnChoice(idx));
                 _activeButtons.Add(btn);
