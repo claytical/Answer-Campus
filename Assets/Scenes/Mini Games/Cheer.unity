@@ -3527,6 +3527,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cc2275b8ba3c84544a8191915fbffc9d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  inputBridge: {fileID: 1736267542}
+  playerInput: {fileID: 1736267540}
   maqrueePanel: {fileID: 210991057}
   playableGameRoot: {fileID: 1673124421}
   scoreboardUI: {fileID: 1143768871}

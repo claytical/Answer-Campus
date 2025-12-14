@@ -6,6 +6,7 @@ using FMODUnity;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
 using VNEngine;
 using Random = UnityEngine.Random;
@@ -174,6 +175,11 @@ public class CheerClip
 
 public class CheerGameManager : MonoBehaviour
 {
+    [Header("Input")]
+    [SerializeField] private CheerInputBridge inputBridge;
+    [SerializeField] private PlayerInput playerInput; 
+    private InputAction _up, _down, _left, _right;
+    
     [Header("UI References")] public GameObject maqrueePanel;
     public GameObject playableGameRoot;
     //public TextMeshProUGUI comboDisplayText;
@@ -210,8 +216,7 @@ public class CheerGameManager : MonoBehaviour
     public Color highlightColor = Color.white;
     public Color successColor = Color.green;
     public Color failColor = Color.red;
-
-// NEW: tint used during the input window
+    
     public Color comboWindowColor = Color.blue;
 
     private Dictionary<int, (CheerDirection a, CheerDirection b)> activeDirections = new();
@@ -267,7 +272,48 @@ public class CheerGameManager : MonoBehaviour
     private Coroutine _runRoundRoutine;
     private int opportunitiesThisRound = 0; // total “drives” shown (each step is one)
     private int markersThisRound = 0;
+    private void Awake()
+    {
+        if (playerInput == null) playerInput = GetComponent<PlayerInput>();
+        if (inputBridge == null)
+            inputBridge = FindFirstObjectByType<CheerInputBridge>();
 
+        if (inputBridge == null)
+            Debug.LogError("[CHEER] No CheerInputBridge found in scene. Input will not work.");
+        
+        _up    = playerInput.actions["PressUp"];
+        _down  = playerInput.actions["PressDown"];
+        _left  = playerInput.actions["PressLeft"];
+        _right = playerInput.actions["PressRight"]; 
+    }
+    private void OnEnable()
+    {
+        playerInput.ActivateInput();               // critical when coming from another scene
+        playerInput.SwitchCurrentActionMap("Play");// ensure correct map
+        playerInput.actions.Enable();
+
+        _up.performed    += OnUp;
+        _down.performed  += OnDown;
+        _left.performed  += OnLeft;
+        _right.performed += OnRight;
+    }
+
+    private void OnDisable()
+    {
+        _up.performed    -= OnUp;
+        _down.performed  -= OnDown;
+        _left.performed  -= OnLeft;
+        _right.performed -= OnRight;
+
+        // Optional: keep enabled if you want inputs during transitions; otherwise disable.
+        playerInput.actions.Disable();
+        playerInput.DeactivateInput();
+    }
+
+    private void OnUp(InputAction.CallbackContext _)    => inputBridge.OnPressUp();
+    private void OnDown(InputAction.CallbackContext _)  => inputBridge.OnPressDown();
+    private void OnLeft(InputAction.CallbackContext _)  => inputBridge.OnPressLeft();
+    private void OnRight(InputAction.CallbackContext _) => inputBridge.OnPressRight();
     void Start()
     {
         weekNumber = (int)StatsManager.Get_Numbered_Stat("Week");
@@ -334,7 +380,8 @@ private void CleanupCheerForQuarterEnd()
     spotlight?.gameObject.SetActive(false);
 
     // clear input buffers
-    CheerInputBridge.Instance?.Clear();
+    if (inputBridge != null) inputBridge.Clear();
+
 }
 
 private void ResetAllLeadersVisuals()
@@ -478,21 +525,29 @@ private void ResetAllLeadersVisuals()
     if (leaderCheer) leaderCheer.SetCombo(AnticipationForDir(dirA));
     yield return null; 
     // Open window #1
-    CheerInputBridge.Instance.Clear(); // reset queue for a clean take
+    if (inputBridge == null)
+    {
+        Debug.LogError("[CHEER] InputBridge missing; aborting marker sequence.");
+        _markerBusy = false;
+        yield break;
+    }
+
+    inputBridge.Clear(); // reset queue for a clean take
     opportunitiesThisRound++;
     double deadline1 = AudioSettings.dspTime + inputWindowSeconds;
+
     bool gotA   = false;
     bool rightA = false;
+
     while (AudioSettings.dspTime < deadline1 && !gotA)
     {
-        if (CheerInputBridge.Instance.TryGetNextDirection(out var d, out var ts))
+        if (inputBridge.TryGetNextDirection(out var d, out var ts))
         {
             gotA   = true;
             rightA = (d == dirA);
         }
         yield return null;
     }
-
     // Feedback #1
     if (rightA)
     {
@@ -516,14 +571,15 @@ private void ResetAllLeadersVisuals()
     SetGlyphSpriteAndColor(leaderIdx, false,  dirB, highlightColor);
 
     if (leaderCheer) leaderCheer.SetCombo(AnticipationForDir(dirB)); 
-    CheerInputBridge.Instance.Clear();
+    if (inputBridge != null) inputBridge.Clear();
+
     opportunitiesThisRound++;
     double deadline2 = AudioSettings.dspTime + inputWindowSeconds;
     bool gotB   = false;
     bool rightB = false;
     while (AudioSettings.dspTime < deadline2 && !gotB)
     {
-        if (CheerInputBridge.Instance.TryGetNextDirection(out var d, out var ts))
+        if (inputBridge.TryGetNextDirection(out var d, out var ts))
         {
             gotB   = true;
             rightB = (d == dirB);

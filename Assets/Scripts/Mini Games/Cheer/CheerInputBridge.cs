@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+
 public struct TimedCheerInput
 {
     public CheerDirection direction;
@@ -14,32 +15,25 @@ public struct TimedCheerInput
 
 public class CheerInputBridge : MonoBehaviour
 {
-    public static CheerInputBridge Instance { get; private set; }
-    private Queue<TimedCheerInput> inputQueue = new();
-    
+    private readonly Queue<TimedCheerInput> inputQueue = new();
 
-    private void Awake()
-    {
-        if (Instance == null) Instance = this;
-        else Destroy(gameObject);
-    }
     private double GetAccurateTimestamp()
     {
         return AudioSettings.dspTime > 0 ? AudioSettings.dspTime : Time.time;
     }
 
+    // These can remain wired from UI Buttons in the scene.
     public void OnPressUp()    => EnqueueDirection(CheerDirection.Up);
     public void OnPressDown()  => EnqueueDirection(CheerDirection.Down);
     public void OnPressLeft()  => EnqueueDirection(CheerDirection.Left);
     public void OnPressRight() => EnqueueDirection(CheerDirection.Right);
 
-    private void EnqueueDirection(CheerDirection dir)
+    public void EnqueueDirection(CheerDirection dir)
     {
         double timestamp = GetAccurateTimestamp();
         inputQueue.Enqueue(new TimedCheerInput(dir, timestamp));
         Debug.Log($"[INPUT] {dir} at {timestamp:F3}");
     }
-
 
     public void DiscardBefore(double minTimestamp)
     {
