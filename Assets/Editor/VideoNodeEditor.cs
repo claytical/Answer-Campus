@@ -6,7 +6,7 @@ using UnityEngine;
 namespace VNEngine
 {
     [CustomEditor(typeof(VideoNode))]
-    public class VideoNodeEditor : Editor
+    public class VideoNodeEditor : UnityEditor.Editor
     {
         private SerializedProperty current_action;
 

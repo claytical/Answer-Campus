@@ -33,6 +33,39 @@ public struct EventInfo
 public static class GameEvents
 {
     const string CustomEventsKey = "CustomEvents";
+    public const string MidtermsEventId = "EXAM_MIDTERMS";
+    public const string FinalsEventId   = "EXAM_FINALS";
+
+    public static void EnsureSemesterRequiredEventsRegistered()
+    {
+        // Midterms
+        if (!HasCustomEvent(MidtermsEventId))
+        {
+            RegisterOrUpdateCustomEvent(new CustomEvent
+            {
+                id        = MidtermsEventId,
+                name      = "Midterms",
+                week      = SemesterHelper.MidtermsWeek,
+                location  = "Lecture Hall",
+                unlocked  = true,
+                completed = false
+            });
+        }
+
+        // Finals
+        if (!HasCustomEvent(FinalsEventId))
+        {
+            RegisterOrUpdateCustomEvent(new CustomEvent
+            {
+                id        = FinalsEventId,
+                name      = "Finals",
+                week      = SemesterHelper.FinalsWeek,
+                location  = "Lecture Hall",
+                unlocked  = true,
+                completed = false
+            });
+        }
+    }
 
     public static List<CustomEvent> LoadCustomEvents()
     {
@@ -41,6 +74,18 @@ public static class GameEvents
         if (string.IsNullOrEmpty(json)) return new();
         var list = JsonUtility.FromJson<CustomEventList>(json);
         return list?.items ?? new();
+    }
+    public static List<EventInfo> GetDueEventsForWeek(int week)
+    {
+        var all = GetWeekPreview(week);
+        if (all == null) return new List<EventInfo>();
+
+        // Finals/Midterms are Custom with ids; football uses played flag already.
+        all.RemoveAll(e =>
+            e.type == EventType.Custom && IsCustomEventCompleted(e.id)
+        );
+
+        return all;
     }
 
     public static void SaveCustomEvents(List<CustomEvent> items)
@@ -57,11 +102,30 @@ public static class GameEvents
         if (idx >= 0) items[idx] = ev; else items.Add(ev);
         SaveCustomEvents(items);
     }
-    public static bool IsCustomEventCompleted(string id)
+    public static bool IsCustomEventCompleted(string key)
     {
-        foreach (var ev in LoadCustomEvents())
-            if (ev.id == id)
-                return ev.completed;
+        if (!TryGetCustomEvent(key, out var ev)) return false;
+        return ev.completed;
+    }
+    public static bool TryGetCustomEvent(string key, out CustomEvent found)
+    {
+        found = null;
+        if (string.IsNullOrEmpty(key)) return false;
+
+        var items = LoadCustomEvents();
+        for (int i = 0; i < items.Count; i++)
+        {
+            var ev = items[i];
+            if (ev == null) continue;
+
+            if (string.Equals(ev.id, key, StringComparison.Ordinal) ||
+                string.Equals(ev.name, key, StringComparison.Ordinal))
+            {
+                found = ev;
+                return true;
+            }
+        }
+
         return false;
     }
     public static string BuildStageRouteEventId(Character character, string sceneName, int stage)
@@ -69,38 +133,59 @@ public static class GameEvents
         // Human-readable but stable
         return $"{character}_{sceneName}_Stage{stage}";
     }
-
-    public static void MarkCustomEventCompleted(string id)
+    public static bool HasCustomEvent(string key)
     {
-        var items = LoadCustomEvents();
-        int i = items.FindIndex(e => e.id == id);
-        if (i >= 0)
+        if (string.IsNullOrEmpty(key)) return false;
+
+        foreach (var ev in LoadCustomEvents())
         {
-            var ev = items[i];
-            ev.completed = true;
-            items[i] = ev;
-            SaveCustomEvents(items);
+            // Match by ID or by Name
+            if (ev.id == key || ev.name == key)
+                return true;
         }
+
+        return false;
     }
 
+    public static bool MarkCustomEventCompleted(string key, bool completed = true)
+    {
+        if (string.IsNullOrEmpty(key)) return false;
+
+        var items = LoadCustomEvents();
+        bool changed = false;
+
+        for (int i = 0; i < items.Count; i++)
+        {
+            var ev = items[i];
+            if (ev == null) continue;
+
+            if (string.Equals(ev.id, key, StringComparison.Ordinal) ||
+                string.Equals(ev.name, key, StringComparison.Ordinal))
+            {
+                if (ev.completed != completed)
+                {
+                    ev.completed = completed;
+                    items[i] = ev;
+                    changed = true;
+                }
+                break;
+            }
+        }
+
+        if (changed) SaveCustomEvents(items);
+        return changed;
+    }
     public static List<EventInfo> GetWeekPreview(int week)
     {
         var outList = new List<EventInfo>();
-
-        // Academic anchors
-        if (week == SemesterHelper.MidtermsWeek)
-            outList.Add(new EventInfo { type = EventType.Midterms, label = "Midterms", week = week });
-
-        if (week == SemesterHelper.FinalsWeek)
-            outList.Add(new EventInfo { type = EventType.Finals, label = "Finals", week = week });
-
+        
         // Football (home) this week?
         var game = FootballScheduler.GetThisWeeksGame(week);
         if (game != null && game.isHome && !game.played)
         {
             outList.Add(new EventInfo {
                 type = EventType.FootballHomeGame,
-                label = $"{game.opponent.schoolName} {game.opponent.mascot}",
+                label = $"Sentinels vs. {game.opponent.mascot}",
                 week = week,
                 location = "FootballStadium"
             });

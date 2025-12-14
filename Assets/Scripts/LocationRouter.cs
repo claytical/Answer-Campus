@@ -10,12 +10,13 @@ public static class LocationRouter
     /// </summary>
     public static void Go(string sceneName)
     {
+        
         if (string.IsNullOrWhiteSpace(sceneName))
         {
             Debug.LogWarning("[LocationRouter] Go called with empty sceneName");
             return;
         }
-        
+        Debug.Log($"[LocationRouter] Go -> '{sceneName}' (active='{SceneManager.GetActiveScene().name}')");
         SceneManager.LoadScene(sceneName);
     }
 

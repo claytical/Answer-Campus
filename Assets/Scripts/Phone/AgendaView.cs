@@ -36,39 +36,33 @@ public void Render()
     {
         var weekEvents = GameEvents.GetWeekPreview(w);
         if (weekEvents == null || weekEvents.Count == 0) continue;
-
         foreach (var evt in weekEvents)
         {
+            // Completion only applies to Custom (unless you add football completion later)
             bool isCompleted = evt.type == EventType.Custom
-                ? GameEvents.IsCustomEventCompleted(evt.id)
+                ? (!string.IsNullOrEmpty(evt.id) && GameEvents.IsCustomEventCompleted(evt.id))
                 : false;
 
             if (isCompleted)
             {
-                // TRUE past: crossed out
+                // Completed items should appear crossed out above "This Week"
                 past.Add(evt);
+                continue;
             }
-            else
+
+            // NEW: Overdue Custom tasks stay actionable (not crossed out)
+            if (evt.type == EventType.Custom && evt.week < currentWeek)
             {
-                // NOT completed:
-                if (evt.type == EventType.Custom)
-                {
-                    // If the event is still available regardless of week,
-                    // it must stay in "This Week".
-                    thisWeek.Add(evt);
-                }
-                else
-                {
-                    // Academic events still follow week logic
-                    if (evt.week < currentWeek)
-                        past.Add(evt);
-                    else if (evt.week == currentWeek)
-                        thisWeek.Add(evt);
-                    else
-                        later.Add(evt);
-                }
+                thisWeek.Add(evt); // or create a separate "Overdue" bucket if you want
+                continue;
             }
+
+            // Existing week bucketing
+            if (evt.week < currentWeek)       past.Add(evt);
+            else if (evt.week == currentWeek) thisWeek.Add(evt);
+            else                              later.Add(evt);
         }
+
     }
 
     // Render past (no header)
@@ -91,6 +85,16 @@ public void Render()
             CreateRow(evt, isPast: false, null, panelRoot);
     }
 }
+private bool ShouldHideMissedFootball(EventInfo evt, int currentWeek)
+{
+    if (evt.type != EventType.FootballHomeGame) return false;
+
+    // If the week has passed, and it's still appearing, it means it wasn't played
+    // (because GameEvents.GetWeekPreview normally hides played games).
+    // You want missed football to be hidden.
+    return evt.week < currentWeek;
+}
+
 private void InsertHeader(string label)
 {
     var go = Instantiate(groupLabelPrefab, panelRoot);

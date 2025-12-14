@@ -5,7 +5,7 @@ namespace VNEngine
 {
     [CanEditMultipleObjects]
     [CustomEditor(typeof(DialogueNode))]
-    public class DialogueNodeEditor : Editor
+    public class DialogueNodeEditor : UnityEditor.Editor
     {
         float normal_label_width;
         private SerializedProperty m_darken;

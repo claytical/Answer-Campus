@@ -1,4 +1,4 @@
-using System.Collections;
+
 using System.Collections.Generic;
 using UnityEngine;
 using VNEngine;
@@ -8,7 +8,7 @@ using UnityEngine.UI;
 using FMODUnity;
 using System.Linq;
 using System.Text.RegularExpressions;
-
+using UnityEngine.SceneManagement;
 [Serializable]
 
 public static class FootballScheduler
@@ -226,8 +226,25 @@ public class Calendar : MonoBehaviour
     public Image finalCharacterImage;
 
     private bool isDay = true;
+    private static bool _isRedirecting;
     // Start is called before the first frame update
     
+
+
+    private void OnEnable()
+    {
+        SceneManager.sceneLoaded += OnSceneLoaded;
+    }
+    private void OnDisable()
+    {
+        SceneManager.sceneLoaded -= OnSceneLoaded;
+    }
+    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        // We have arrived somewhere. Allow future redirects.
+        _isRedirecting = false;
+    }
+
     void Start()
     {
         if (!ambientFMODEventReference.IsNull)
@@ -238,14 +255,14 @@ public class Calendar : MonoBehaviour
             }
         }
 
-        if (musicFMODEventReference.IsNull)
+        if (!musicFMODEventReference.IsNull)
         {
             if (FMODAudioManager.Instance != null)
             {
                 FMODAudioManager.Instance.PlayMusic(musicFMODEventReference);
             }
         }
-//        FMODAudioManager.Instance.PrintActiveMusicInstances();
+        GameEvents.EnsureSemesterRequiredEventsRegistered();
 
         if(StatsManager.Numbered_Stat_Exists("Week"))
         {
@@ -254,9 +271,10 @@ public class Calendar : MonoBehaviour
 
             if (week <= 1)
             {
-                Debug.Log("No football schedule found, generating...");
+                Debug.Log("New Game, generating football schedule and exam events");
                 FootballScheduler.GenerateSchedule();
             }
+            TryRedirectToRequiredEvent();
         }
 
         isDay = !CharacterProgressHelper.IsNight();
@@ -269,18 +287,7 @@ public class Calendar : MonoBehaviour
         {
             studyPrompt.text = prompt;
         }
-/*
-        for (int i = 0; i < SemesterHelper.GetDaysToCrossOut(week); i++)
-        {
-            Instantiate(checkmark, calendarGrid);
-        }
-*/
-/*
-        if (week == SemesterHelper.FinalsWeek)
-        {
-            finalExamLocation.GoToLocation();
-        }
-        */
+
         foreach (var evt in GameEvents.GetWeekPreview(week))
             Debug.Log($"[Calendar Preview] Week {evt.week}: {evt.type} - {evt.label} @ {evt.location}");
 
@@ -289,6 +296,34 @@ public class Calendar : MonoBehaviour
             EndSemester();
         }
     }
+    private void TryRedirectToRequiredEvent()
+    {
+        if (_isRedirecting) return;
+
+        int week = (int)StatsManager.Get_Numbered_Stat("Week");
+        var due = GameEvents.GetWeekPreview(week);
+
+        // Priority: Finals, Midterms, Football
+        EventInfo chosen = default;
+        bool hasChosen = false;
+
+        int idx = due.FindIndex(e => e.id == GameEvents.FinalsEventId);
+        if (idx >= 0) { chosen = due[idx]; hasChosen = true; }
+
+        if (!hasChosen)
+        {
+            idx = due.FindIndex(e => e.id == GameEvents.MidtermsEventId);
+            if (idx >= 0) { chosen = due[idx]; hasChosen = true; }
+        }
+        
+        if (hasChosen && !string.IsNullOrEmpty(chosen.location))
+        {
+            _isRedirecting = true;
+            LocationRouter.Go(chosen.location);
+        }
+    }
+
+
     public void ToggleDaytime()
     {
         isDay = !isDay;

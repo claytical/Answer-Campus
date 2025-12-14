@@ -8,12 +8,27 @@ namespace VNEngine
     [AddComponentMenu("Game Object/VN Engine/Branching/Show Choice Node")]
     public class ShowChoiceNode : Node
     {
+        [System.Serializable] private class FootballGameListWrapper { public FootballGame[] games; }
+        [System.Serializable] private class FootballGame { public bool played; public bool won; }
+
         [System.Serializable]
         public class Choice
         {
             [TextArea] public string text;
             public ConversationManager nextConversation;      // null => continue current
-            public List<TraitRequirement> requirements = new List<TraitRequirement>(); // ALL must pass
+            [Header("Enable Requirements")]
+            public bool useTraits = false;
+            public bool useEvents = false;
+            public bool useGame = false;
+
+            [Header("Trait Requirements (ALL must pass)")]
+            public List<TraitRequirement> traitRequirements = new();
+
+            [Header("Event Requirements (ALL must pass)")]
+            public List<EventRequirement> eventRequirements = new();
+
+            [Header("Game Requirements (ALL must pass)")]
+            public FootballRequirement footballRequirement = new FootballRequirement { check = FootballCheckType.None };
         }
 
         public List<Choice> choices = new List<Choice>();
@@ -36,7 +51,7 @@ namespace VNEngine
             int uiMax = UIManager.ui_manager.choice_buttons.Length;                  // bound to prefab button capacity :contentReference[oaicite:5]{index=5}
             for (int i = 0; i < choices.Count && visible.Count < uiMax; i++)
             {
-                if (MeetsRequirements(choices[i].requirements))
+                if (MeetsAllRequirements(choices[i]))
                     visible.Add(i);
             }
 
@@ -79,6 +94,89 @@ namespace VNEngine
                 EventSystem.current.SetSelectedGameObject(_activeButtons[0].gameObject);
             }
         }
+private bool MeetsAllRequirements(Choice c)
+{
+    if (c == null) return false;
+
+    // TRAITS
+    if (c.useTraits && c.traitRequirements != null && c.traitRequirements.Count > 0)
+    {
+        for (int i = 0; i < c.traitRequirements.Count; i++)
+        {
+            var r = c.traitRequirements[i];
+
+            // Safety: if trait requirement is uninitialized, fail closed or skip.
+            // I recommend fail closed for pedagogy: errors become visible quickly.
+            float current = StatsManager.Get_Numbered_Stat(r.trait.ToString());
+            if (!CompareNumber(current, r.compare, r.value))
+                return false;
+        }
+    }
+
+    // EVENTS
+    if (c.useEvents && c.eventRequirements != null && c.eventRequirements.Count > 0)
+    {
+        for (int i = 0; i < c.eventRequirements.Count; i++)
+        {
+            var r = c.eventRequirements[i];
+            if (r == null || string.IsNullOrEmpty(r.key))
+                return false; // fail closed: author turned on Events but didn’t specify key
+
+            bool completed = GameEvents.IsCustomEventCompleted(r.key);
+
+            if (r.check == EventCheckType.Completed && !completed) return false;
+            if (r.check == EventCheckType.NotCompleted && completed) return false;
+        }
+    }
+
+    // GAME (football only for now)
+    if (c.useGame && c.footballRequirement != null && c.footballRequirement.check != FootballCheckType.None)
+    {
+        var record = GetFootballRecord();
+
+        switch (c.footballRequirement.check)
+        {
+            case FootballCheckType.IsWinningRecord:
+                if (!(record.wins > record.losses)) return false;
+                break;
+
+            case FootballCheckType.WinsAtLeast:
+                if (!(record.wins >= Mathf.RoundToInt(c.footballRequirement.threshold))) return false;
+                break;
+
+            case FootballCheckType.WinRateAtLeast:
+                if (!(record.played > 0 && record.winRate >= c.footballRequirement.threshold)) return false;
+                break;
+        }
+    }
+
+    return true;
+}
+
+private (int wins, int losses, int played, float winRate) GetFootballRecord()
+{
+    string json = StatsManager.Get_String_Stat("FootballSchedule");
+    if (string.IsNullOrEmpty(json)) return (0, 0, 0, 0f);
+
+    FootballGameListWrapper wrapper = null;
+    try { wrapper = JsonUtility.FromJson<FootballGameListWrapper>(json); }
+    catch { }
+
+    if (wrapper?.games == null || wrapper.games.Length == 0)
+        return (0, 0, 0, 0f);
+
+    int wins = 0, losses = 0;
+    for (int i = 0; i < wrapper.games.Length; i++)
+    {
+        var g = wrapper.games[i];
+        if (!g.played) continue;
+        if (g.won) wins++; else losses++;
+    }
+
+    int played = wins + losses;
+    float winRate = played > 0 ? (float)wins / played : 0f;
+    return (wins, losses, played, winRate);
+}
 
         private void OnChoice(int idx)
         {

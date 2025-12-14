@@ -5,7 +5,7 @@ namespace VNEngine
 {
     [CanEditMultipleObjects]
     [CustomEditor(typeof(StaticImageNode))]
-    public class StaticImageNodeEditor : Editor
+    public class StaticImageNodeEditor : UnityEditor.Editor
     {
         private SerializedProperty image_action;
 

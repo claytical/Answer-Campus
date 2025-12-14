@@ -31,7 +31,7 @@ public class FivePositionsGameManager : MonoBehaviour
     public TextMeshProUGUI targetDefinitionText;
     public TextMeshProUGUI countdownText; // "3-2-1" countdown text
     public TextMeshProUGUI scoreText;
-    public ConversationManager endExamConversation;
+    
     private ConversationManager conversationManager;
     [Header("Prefabs/Assets")]
     public GameObject letterPrefab;
@@ -74,14 +74,28 @@ public class FivePositionsGameManager : MonoBehaviour
     private bool isTimerPaused = false;
     public List<int> activeColumns = new List<int>();
     private List<GameObject> boxVisuals = new List<GameObject>();
-    
+    public ChallengeProfile pendingChallengeProfile;
+    public ConversationManager pendingEndConversation;
+
     public void Initialize()
     {
-//        audioSource = FMODAudioManager.Instance.GetAudioSource();
         SetMode(currentMode);
         SpawnVisuals();
-        StartCoroutine(DelayedGameStart());
     }
+
+    public void LaunchExam()
+    {
+        Initialize();
+        // Ensure this does NOT auto-start elsewhere (remove any auto StartGame() in Initialize)
+        //SetMode(GameMode.Exam);
+
+        if (pendingChallengeProfile != null)
+            ConfigureChallenge(pendingChallengeProfile);
+
+        StartGame();
+    }
+
+
     private void SpawnVisuals()
     {
         for (int i = 0; i < boxPositions.Length; i++)
@@ -606,6 +620,11 @@ public class FivePositionsGameManager : MonoBehaviour
 
         // Log score to StatsManager using a consistent key
         StatsManager.Set_Numbered_Stat("StudyGameScore", score);
+        string examId = StatsManager.Get_String_Stat("CurrentExamId");
+        if (!string.IsNullOrEmpty(examId))
+        {
+            GameEvents.MarkCustomEventCompleted(examId, true);
+        }
 
         // Branch by context
         if (VNSceneManager.scene_manager != null)
@@ -614,7 +633,7 @@ public class FivePositionsGameManager : MonoBehaviour
             switch (currentMode)
             {
                 case GameMode.Exam:
-                    VNSceneManager.scene_manager.Start_Conversation(endExamConversation);
+                    VNSceneManager.scene_manager.Start_Conversation(pendingEndConversation);
 
                     break;
                     case GameMode.Group:
@@ -635,14 +654,11 @@ public class FivePositionsGameManager : MonoBehaviour
         }
 
         studyGameParent.SetActive(false);
-    }
+        pendingChallengeProfile = null;
+        pendingEndConversation  = null;
 
-    public void BackToHome()
-    {
-        //TODO: Adjust Player Stats
-        SceneManager.LoadScene("Home");
     }
-
+    
     /// <summary>
     /// Destroys any leftover letters still on the screen.
     /// </summary>

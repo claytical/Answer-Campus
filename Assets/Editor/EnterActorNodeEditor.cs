@@ -5,7 +5,7 @@ namespace VNEngine
 {
     [CanEditMultipleObjects]
     [CustomEditor(typeof(EnterActorNode))]
-    public class EnterActorNodeEditor : Editor
+    public class EnterActorNodeEditor : UnityEditor.Editor
     {
         float normal_label_width;
         private SerializedProperty m_actorname;
