@@ -10,13 +10,19 @@ public static class LocationRouter
     /// </summary>
     public static void Go(string sceneName)
     {
-        
         if (string.IsNullOrWhiteSpace(sceneName))
         {
             Debug.LogWarning("[LocationRouter] Go called with empty sceneName");
             return;
         }
+
         Debug.Log($"[LocationRouter] Go -> '{sceneName}' (active='{SceneManager.GetActiveScene().name}')");
+
+        if (FMODAudioManager.Instance != null)
+        {
+            FMODAudioManager.Instance.StopAllAudio(1f);
+        }
+
         SceneManager.LoadScene(sceneName);
     }
 

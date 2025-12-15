@@ -52,6 +52,8 @@ public class FMODAudioManager : MonoBehaviour
     }
     public void PlayMusic(EventReference eventName, float fadeDuration = 1f)
     {
+        StopAllAudio(fadeDuration);
+
         if (currentMusicCoroutine != null)
             StopCoroutine(currentMusicCoroutine);
 
@@ -232,7 +234,27 @@ public class FMODAudioManager : MonoBehaviour
         Instance = this;
         DontDestroyOnLoad(this.gameObject);
     }
-    
+    public void StopAllAudio(float fadeDuration = 1f)
+    {
+        if (currentMusicCoroutine != null)
+        {
+            StopCoroutine(currentMusicCoroutine);
+            currentMusicCoroutine = null;
+        }
+
+        if (currentMusic.isValid())
+        {
+            StartCoroutine(FadeOutAndStop(currentMusic, fadeDuration));
+            currentMusic = default;
+        }
+
+        if (currentAmbient.isValid())
+        {
+            StartCoroutine(FadeOutAndStop(currentAmbient, fadeDuration));
+            currentAmbient = default;
+        }
+    }
+
     public void SetDrums(int drumSet)
     {
         currentMusic.setParameterByName("CharacterDrumSelection", drumSet);

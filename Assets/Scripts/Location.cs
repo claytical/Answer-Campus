@@ -48,6 +48,8 @@ public class Location : MonoBehaviour
     }
     public void GoToLocation()
     {
+        FMODAudioManager.Instance.FadeOutAmbient(1f);
+        FMODAudioManager.Instance.FadeOutMusic(1f);
         LocationRouter.Go(scene);
     }
     public void ClearPlayerPrefs()
