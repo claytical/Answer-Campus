@@ -1,0 +1,404 @@
+{
+  "weeks": [
+    {
+      "week": "1",
+      "questions": [
+        {
+          "question": "What is the lesson the story teaches?",
+          "answer": "moral",
+          "definition": "A lesson about right conduct; what a story teaches."
+        },
+        {
+          "question": "A particular way of looking at something",
+          "answer": "angle",
+          "definition": "A viewpoint or perspective."
+        },
+        {
+          "question": "Another word for view",
+          "answer": "sight",
+          "definition": "The ability to see; also what is seen."
+        },
+        {
+          "question": "Before you speak, try to...",
+          "answer": "think",
+          "definition": "To use your mind to form ideas and judgments."
+        },
+        {
+          "question": "The opposite of war",
+          "answer": "peace",
+          "definition": "Freedom from disturbance or conflict."
+        },
+        {
+          "question": "A feeling or perception about something",
+          "answer": "sense",
+          "definition": "An impression or intuition."
+        },
+        {
+          "question": "To look closely and notice details",
+          "answer": "study",
+          "definition": "To examine carefully for understanding."
+        }
+      ]
+    },
+    {
+      "week": "2",
+      "questions": [
+        {
+          "question": "To form an opinion too quickly",
+          "answer": "judge",
+          "definition": "To decide without full evidence; to evaluate."
+        },
+        {
+          "question": "A formal examination in court",
+          "answer": "trial",
+          "definition": "A legal hearing to decide a case."
+        },
+        {
+          "question": "Where legal cases are heard",
+          "answer": "court",
+          "definition": "A place where justice is administered."
+        },
+        {
+          "question": "A person who serves on a jury",
+          "answer": "juror",
+          "definition": "A citizen selected to decide facts in a case."
+        },
+        {
+          "question": "A rule that controls what happens",
+          "answer": "order",
+          "definition": "A command or arrangement; a rule."
+        },
+        {
+          "question": "A small tool the judge may use",
+          "answer": "gavel",
+          "definition": "A mallet used to keep order in court."
+        },
+        {
+          "question": "To say something as a fact",
+          "answer": "claim",
+          "definition": "To state or assert something."
+        }
+      ]
+    },
+    {
+      "week": "3",
+      "questions": [
+        {
+          "question": "Something that is factually correct",
+          "answer": "truth",
+          "definition": "What is real or accurate."
+        },
+        {
+          "question": "Evidence that supports a claim",
+          "answer": "proof",
+          "definition": "Something that shows a statement is true."
+        },
+        {
+          "question": "What a witness takes in court",
+          "answer": "swear",
+          "definition": "To promise formally to tell the truth."
+        },
+        {
+          "question": "Things that can be verified",
+          "answer": "facts",
+          "definition": "Information that is objectively true."
+        },
+        {
+          "question": "To hide the truth by twisting it",
+          "answer": "shade",
+          "definition": "To cast doubt or alter perception."
+        },
+        {
+          "question": "Not the whole picture",
+          "answer": "slice",
+          "definition": "A small part or segment of something."
+        },
+        {
+          "question": "Unclear or confusing, like perception",
+          "answer": "foggy",
+          "definition": "Not clear; confusing."
+        },
+        {
+          "question": "A regular tendency or practice",
+          "answer": "habit",
+          "definition": "A repeated behavior, often automatic."
+        }
+      ]
+    },
+    {
+      "week": "4",
+      "questions": [
+        {
+          "question": "Showing courage in the face of fear",
+          "answer": "brave",
+          "definition": "Willing to face danger or difficulty."
+        },
+        {
+          "question": "Boldness or courage to act",
+          "answer": "nerve",
+          "definition": "The confidence to do something difficult."
+        },
+        {
+          "question": "To try again after failing",
+          "answer": "retry",
+          "definition": "To attempt again."
+        },
+        {
+          "question": "To remain firm under pressure",
+          "answer": "stand",
+          "definition": "To hold your ground; not back down."
+        },
+        {
+          "question": "To say what you believe",
+          "answer": "speak",
+          "definition": "To voice an idea aloud."
+        },
+        {
+          "question": "Strong and determined",
+          "answer": "steel",
+          "definition": "Emotionally tough; unwavering."
+        },
+        {
+          "question": "To keep going despite fear",
+          "answer": "press",
+          "definition": "To continue forward."
+        }
+      ]
+    },
+    {
+      "week": "5",
+      "questions": [
+        {
+          "question": "To understand someone else's feelings",
+          "answer": "heart",
+          "definition": "Compassion; understanding others."
+        },
+        {
+          "question": "Compassion shown to someone in pain",
+          "answer": "mercy",
+          "definition": "Kindness or forgiveness toward others."
+        },
+        {
+          "question": "To notice how someone else feels",
+          "answer": "aware",
+          "definition": "Conscious; mindful of others."
+        },
+        {
+          "question": "To offer kindness you didn't have to",
+          "answer": "grace",
+          "definition": "Courtesy, care, or kindness."
+        },
+        {
+          "question": "To give your time and care",
+          "answer": "cared",
+          "definition": "Showed concern or kindness."
+        },
+        {
+          "question": "To exchange feelings or support",
+          "answer": "share",
+          "definition": "To give a part of yourself to others."
+        },
+        {
+          "question": "Speak up for someone else",
+          "answer": "voice",
+          "definition": "To express support or concern aloud."
+        }
+      ]
+    },
+    {
+      "week": "6",
+      "questions": [
+        {
+          "question": "The ability to influence or control",
+          "answer": "power",
+          "definition": "The capacity to act or affect outcomes."
+        },
+        {
+          "question": "Great strength or force",
+          "answer": "might",
+          "definition": "Power or strength."
+        },
+        {
+          "question": "To make something happen by strength",
+          "answer": "force",
+          "definition": "To compel by physical or social pressure."
+        },
+        {
+          "question": "Currency; resources that enable choice",
+          "answer": "money",
+          "definition": "Wealth in the form of cash or assets."
+        },
+        {
+          "question": "A social group with shared status",
+          "answer": "class",
+          "definition": "A group divided by wealth or role."
+        },
+        {
+          "question": "To control or govern",
+          "answer": "reign",
+          "definition": "To rule; to hold power."
+        },
+        {
+          "question": "Related to law and rights",
+          "answer": "legal",
+          "definition": "Allowed by law; lawful."
+        }
+      ]
+    },
+    {
+      "week": "7",
+      "questions": [
+        {
+          "question": "Not loud; kept under control",
+          "answer": "quiet",
+          "definition": "Making little noise; restrained."
+        },
+        {
+          "question": "A short break or hesitation",
+          "answer": "pause",
+          "definition": "A moment to stop and think."
+        },
+        {
+          "question": "Without motion; calm and quiet",
+          "answer": "still",
+          "definition": "Not moving; calm."
+        },
+        {
+          "question": "To reduce the volume",
+          "answer": "lower",
+          "definition": "To make quieter; reduce intensity."
+        }
+      ]
+    },
+    {
+      "week": "8",
+      "questions": [
+        {
+          "question": "Without anyone else present",
+          "answer": "alone",
+          "definition": "By yourself; without companionship."
+        },
+        {
+          "question": "A person who keeps to themselves",
+          "answer": "loner",
+          "definition": "Someone who prefers to be alone."
+        },
+        {
+          "question": "Separated from others",
+          "answer": "apart",
+          "definition": "Not together; separated."
+        },
+        {
+          "question": "Without company or support",
+          "answer": "solos",
+          "definition": "On your own; solo efforts."
+        },
+        {
+          "question": "A feeling of being left out",
+          "answer": "empty",
+          "definition": "Hollow; lacking connection or meaning."
+        }
+      ]
+    },
+    {
+      "week": "9",
+      "questions": [
+        {
+          "question": "High respect; doing what is right",
+          "answer": "honor",
+          "definition": "Integrity and respect earned through actions."
+        },
+        {
+          "question": "A strong moral principle",
+          "answer": "ethic",
+          "definition": "A guiding belief about right and wrong."
+        },
+        {
+          "question": "Courage and nobility",
+          "answer": "valor",
+          "definition": "Bravery and strength of spirit."
+        },
+        {
+          "question": "A feeling of deep satisfaction",
+          "answer": "pride",
+          "definition": "Self-respect; sometimes arrogance."
+        },
+        {
+          "question": "A fair and equal treatment",
+          "answer": "equal",
+          "definition": "The same in value, amount, or status."
+        },
+        {
+          "question": "To keep your word",
+          "answer": "trust",
+          "definition": "Firm belief in someone or something."
+        }
+      ]
+    },
+    {
+      "week": "10",
+      "questions": [
+        {
+          "question": "To gain knowledge or skill",
+          "answer": "learn",
+          "definition": "To understand through study or experience."
+        },
+        {
+          "question": "To help someone else learn",
+          "answer": "teach",
+          "definition": "To instruct or explain."
+        },
+        {
+          "question": "To examine carefully for understanding",
+          "answer": "study",
+          "definition": "To learn by reading or practice."
+        },
+        {
+          "question": "To understand or comprehend",
+          "answer": "grasp",
+          "definition": "To fully understand an idea."
+        },
+        {
+          "question": "To put knowledge into action",
+          "answer": "apply",
+          "definition": "To use something in practice."
+        },
+        {
+          "question": "A plan for improving",
+          "answer": "adapt",
+          "definition": "To adjust based on new information."
+        }
+      ]
+    },
+    {
+      "week": "11",
+      "questions": [
+        {
+          "question": "Look back and summarize what you learned",
+          "answer": "recap",
+          "definition": "A summary; going over again."
+        },
+        {
+          "question": "A moment that changes everything",
+          "answer": "shift",
+          "definition": "A change in direction or thinking."
+        },
+        {
+          "question": "To ask questions instead of assuming",
+          "answer": "probe",
+          "definition": "To investigate deeply."
+        },
+        {
+          "question": "To make meaning from a story",
+          "answer": "infer",
+          "definition": "To reach a conclusion from evidence."
+        },
+        {
+          "question": "To notice patterns and details",
+          "answer": "focus",
+          "definition": "To pay close attention."
+        }
+      ]
+    }
+  ]
+}

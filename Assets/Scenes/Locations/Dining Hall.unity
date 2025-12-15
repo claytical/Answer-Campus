@@ -56660,6 +56660,10 @@ PrefabInstance:
     m_TransformParent: {fileID: 552146082}
     m_Modifications:
     - target: {fileID: -1912529374127074432, guid: a4d4f071e94b44724b9720b619dc07bf, type: 3}
+      propertyPath: information.id
+      value: Movie Night with Charli
+      objectReference: {fileID: 0}
+    - target: {fileID: -1912529374127074432, guid: a4d4f071e94b44724b9720b619dc07bf, type: 3}
       propertyPath: information.type
       value: 3
       objectReference: {fileID: 0}

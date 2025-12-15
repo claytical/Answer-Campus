@@ -18,6 +18,7 @@ namespace VNEngine
             friendship.characterName = character.ToString();
             friendship.relationship = Relationship.FRIEND;
             friendship.AddToContacts();
+            StatsManager.Set_Boolean_Stat("PhoneHasNewActivity", true);
             Debug.Log($"Added contact {character} to list");
             Finish_Node();
         }

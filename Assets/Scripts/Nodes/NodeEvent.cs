@@ -32,7 +32,7 @@ namespace VNEngine
             Debug.Log(
                 $"[NodeEvent] Registered custom agenda event '{ev.name}' " +
                 $"(id={ev.id}, week={ev.week}, location={ev.location})");
-
+            StatsManager.Set_Boolean_Stat("PhoneHasNewActivity", true);
             Finish_Node();
         }
 

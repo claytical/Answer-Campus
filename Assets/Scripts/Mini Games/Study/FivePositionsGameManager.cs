@@ -25,7 +25,9 @@ public class FivePositionsGameManager : MonoBehaviour
     [Header("Word List")] public List<WordDefinition> possibleWords;
     public StudyQuestionLoader questionLoader;
 
-    [Header("Scene References")]
+    
+    private QuestionAnswerPair _currentQuestion;
+[Header("Scene References")]
     public RectTransform[] boxPositions = new RectTransform[5];
     public TextMeshProUGUI[] boxLetterDisplays = new TextMeshProUGUI[5];
     public TextMeshProUGUI targetDefinitionText;
@@ -213,7 +215,7 @@ public class FivePositionsGameManager : MonoBehaviour
         gameIsOver = false;
         // Start the timer coroutine right away 
         StartCoroutine(GameTimerCoroutine());
-        questionLoader.LoadQuestionsForCurrentWeek();
+        questionLoader.LoadQuestionsForMode();
         // Start the first countdown
         StartCoroutine(CountdownCoroutine());
         
@@ -407,6 +409,7 @@ public class FivePositionsGameManager : MonoBehaviour
         }
 
         QuestionAnswerPair question = SelectRandomQuestion();
+        _currentQuestion = question;
         if (question != null)
         {
             targetWord = question.answer.ToLower(); // Ensure lowercase for consistency
@@ -452,7 +455,7 @@ public class FivePositionsGameManager : MonoBehaviour
         // Decide whether we're using definitions or questions
         bool useDefinitions = profile.promptType == ChallengeProfile.PromptType.Definitions;
         questionLoader.useDefinitions = useDefinitions;
-        questionLoader.LoadQuestionsForCurrentWeek(); // fallback
+        questionLoader.LoadQuestionsForMode(); // fallback
     }
 
     private QuestionAnswerPair SelectRandomQuestion()
@@ -504,6 +507,7 @@ public class FivePositionsGameManager : MonoBehaviour
     }
     private IEnumerator FailCurrentWordAndAdvance()
     {
+        if (questionLoader != null && _currentQuestion != null) questionLoader.MarkFail(_currentQuestion.answer);
         strikesThisWord = 0;
 
         // Clear the current attempt
@@ -612,6 +616,7 @@ public class FivePositionsGameManager : MonoBehaviour
 
         // If all boxes are filled, increase score & start next round
         if (AllBoxesFilled()) {
+            if (questionLoader != null && _currentQuestion != null) questionLoader.MarkSuccess(_currentQuestion.answer);
             score++;
             UpdateScoreUI();
             StartCoroutine(RestartGameRoutine());
@@ -669,7 +674,7 @@ public class FivePositionsGameManager : MonoBehaviour
             }
             // Start the timer coroutine right away 
             StartCoroutine(GameTimerCoroutine());
-            questionLoader.LoadQuestionsForCurrentWeek();
+            questionLoader.LoadQuestionsForMode();
             // Run another "3-2-1" countdown, which will unpause the timer again
             StartCoroutine(CountdownCoroutine(false));
             

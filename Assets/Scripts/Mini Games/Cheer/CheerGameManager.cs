@@ -2,7 +2,6 @@ using System;
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using FMODUnity;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
@@ -160,7 +159,7 @@ public struct CheerLeader
     public Cheer cheer;         // The cheerleader (pose logic)
     public Image glyphA;        // Left directional arrow
     public Image glyphB;        // Right directional arrow
-    public CountdownBar countdownBar;
+//    public CountdownBar countdownBar;
 
 }
 
@@ -175,20 +174,30 @@ public class CheerClip
 
 public class CheerGameManager : MonoBehaviour
 {
+    [Header("Intro Panel")]
+    [SerializeField] private float marqueeHoldSeconds = 1.5f; // tweak in Inspector
+    [Header("Glyph Fade")]
+    [SerializeField] private float glyphMinAlpha = 0.0f; // how far it fades (0 = invisible)
+    private readonly Dictionary<Image, Coroutine> _glyphFadeCos = new();
+    [Header("Quarter End")]
+    [SerializeField] private float endOfQuarterMarkerBuffer = 0.75f; // tune
+    private int _eventLengthMs = -1;
+    [Header("Quarter UI Timing")]
+    [SerializeField] private float quarterIntroScoreboardSeconds = 2.0f;
+    [SerializeField] private float quarterEndScoreboardSeconds   = 2.0f;
+
     [Header("Input")]
     [SerializeField] private CheerInputBridge inputBridge;
     [SerializeField] private PlayerInput playerInput; 
     private InputAction _up, _down, _left, _right;
-    
+    [Header("Audio Backend")]
+    [SerializeField] private CheerAudioBackendSelector audioSelector;
+    private ICheerAudioBackend _audio;
+
     [Header("UI References")] public GameObject maqrueePanel;
     public GameObject playableGameRoot;
     //public TextMeshProUGUI comboDisplayText;
     public GameObject scoreboardUI;
-    public AudioSource audioSource;
-    public EventReference crowd;
-    public EventReference countdownEvent;
-    public EventReference gameEvent;
-    public AudioClip introClip;
     public TextMeshProUGUI homeScoreText;
     public TextMeshProUGUI awayScoreText;
     public TextMeshProUGUI awayTeamNameText;
@@ -255,7 +264,6 @@ public class CheerGameManager : MonoBehaviour
     private double _anchorDSP;
     private readonly ConcurrentQueue<double> _cueQueue = new();
     private double _baseDSP; // aligns FMOD timeline ms to Unity DSP seconds
-    private FMOD.Studio.EventInstance _activeCheer;
     
     int home, away;
     private static readonly Dictionary<CheerCombo, CheerDirection[]> comboMap = new()
@@ -309,6 +317,64 @@ public class CheerGameManager : MonoBehaviour
         playerInput.actions.Disable();
         playerInput.DeactivateInput();
     }
+    private void StopGlyphFade(Image img)
+    {
+        if (img == null) return;
+        if (_glyphFadeCos.TryGetValue(img, out var co) && co != null)
+            StopCoroutine(co);
+
+        _glyphFadeCos.Remove(img);
+    }
+
+    private void SetGlyphAlpha(Image img, float a)
+    {
+        if (img == null) return;
+        var c = img.color;
+        c.a = Mathf.Clamp01(a);
+        img.color = c;
+    }
+
+    private void SetGlyphColorFullAlpha(Image img, Color rgb)
+    {
+        if (img == null) return;
+        rgb.a = 1f;
+        img.color = rgb;
+    }
+
+    private void StartGlyphFade(Image img, float durationSec)
+    {
+        if (img == null) return;
+
+        StopGlyphFade(img);
+
+        // Start from full strength
+        SetGlyphAlpha(img, 1f);
+
+        if (!isActiveAndEnabled) return;
+
+        var co = StartCoroutine(GlyphFadeRoutine(img, durationSec));
+        _glyphFadeCos[img] = co;
+    }
+
+    private IEnumerator GlyphFadeRoutine(Image img, float durationSec)
+    {
+        float dur = Mathf.Max(0.01f, durationSec);
+        float t0 = Time.realtimeSinceStartup;
+
+        while (img != null)
+        {
+            float t = (Time.realtimeSinceStartup - t0) / dur; // 0..1
+            if (t >= 1f) break;
+
+            float a = Mathf.Lerp(1f, glyphMinAlpha, t);
+            SetGlyphAlpha(img, a);
+
+            yield return null;
+        }
+
+        if (img != null) SetGlyphAlpha(img, glyphMinAlpha);
+        _glyphFadeCos.Remove(img);
+    }
 
     private void OnUp(InputAction.CallbackContext _)    => inputBridge.OnPressUp();
     private void OnDown(InputAction.CallbackContext _)  => inputBridge.OnPressDown();
@@ -318,7 +384,8 @@ public class CheerGameManager : MonoBehaviour
     {
         weekNumber = (int)StatsManager.Get_Numbered_Stat("Week");
         FootballGame game = FootballScheduler.GetThisWeeksGame(weekNumber);
-        FMODAudioManager.Instance.PlayMusic(crowd);
+        _audio = audioSelector != null ? audioSelector.Backend : null;
+        _audio?.StartCrowd();
         
         if (game != null && game.isHome && !game.played)
         {
@@ -326,7 +393,6 @@ public class CheerGameManager : MonoBehaviour
             // You can access: game.opponent
             awayTeamNameText.text = game.opponent.schoolName;
             scoreboardAwayTeamText.text = game.opponent.mascot;
-            FMODAudioManager.Instance.PlayMusic(crowd);
         }
         else
         {
@@ -348,17 +414,9 @@ private void CleanupCheerForQuarterEnd()
     if (_markerCo != null)       { StopCoroutine(_markerCo);        _markerCo = null; }
     _markerBusy = false;                 // <<< important: allow next marker
     _markerLeaderIdx = 0;                // <<< important: start next quarter on first leader
-
-    // stop FMOD event if it’s still going
-    if (_activeCheer.isValid())
-    {
-        _activeCheer.getPlaybackState(out var st);
-        if (st != FMOD.Studio.PLAYBACK_STATE.STOPPED)
-            _activeCheer.stop(FMOD.Studio.STOP_MODE.IMMEDIATE);
-        _activeCheer.release();
-    }
+    _audio?.StopCheer(true);
     _roundActive = false;
-
+    
     // clear timing/cue state
     _baseDSP = double.NaN;
     _lastCueStep = 0;
@@ -375,7 +433,7 @@ private void CleanupCheerForQuarterEnd()
     for (int i = 0; i < matchSequences.Count; i++)
     {
         ResetGlyphTintAndHide(i);
-        matchSequences[i].cheerleader.countdownBar?.Cancel();
+        //matchSequences[i].cheerleader.countdownBar?.Cancel();
     }
     spotlight?.gameObject.SetActive(false);
 
@@ -415,84 +473,85 @@ private void ResetAllLeadersVisuals()
 
     IEnumerator GameFlowRoutine()
     {
+        _audio ??= audioSelector != null ? audioSelector.Backend : null;
+        Debug.Log($"[CHEER] audioSelector={(audioSelector ? audioSelector.name : "null")} backend={_audio?.GetType().Name ?? "null"} cheerCount={_audio?.CheerCount ?? -1}");
         yield return StartCoroutine(FadeFromBlack());
-        maqrueePanel.SetActive(false);
-        if (playableGameRoot != null) playableGameRoot.SetActive(false);
-
-        for (int q = 1; q <= 4; q++)
+        if (maqrueePanel != null)
         {
-            currentQuarter = q;
-            UpdateScoreboardUI();
-
-            scoreboardUI.SetActive(true);
-            playableGameRoot.SetActive(false);
-            if (introClip != null)
-            {
-                //audioSource.PlayOneShot(introClip);
-                yield return new WaitForSeconds(introClip.length);
-            }
-            CleanupCheerForQuarterEnd();
-            scoreboardUI.SetActive(false);
-            playableGameRoot.SetActive(true);
-            if (playableGameRoot != null) playableGameRoot.SetActive(true);
-            int cheerIndex = PickCheerIndex();
-            int authoredMaxCheer = 1; // you currently have CHEER0 and CHEER1
-            if (cheerIndex > authoredMaxCheer)
-            {
-                Debug.LogWarning($"[CHEER] Picked Cheer={cheerIndex} but only 0..{authoredMaxCheer} are authored. Clamping.");
-                cheerIndex = Mathf.Clamp(cheerIndex, 0, authoredMaxCheer);
-            }
-            selectedCheerClip = cheers[cheerIndex];
-            Debug.Log($"[CHEER] Starting Band Cheer with Cheer={cheerIndex}");
-            Debug.Log($"Playing Event: {countdownEvent.ToString()}");
-            yield return StartCoroutine(FMODAudioManager.Instance.PlayOneShotAndWaitPrecise(
-                countdownEvent,
-                "Countdown",
-                selectedCheerClip.countdownParameter
-            ));
-            
-            // Wait one frame to ensure playback is initialized
-            yield return null;
-            _baseDSP = double.NaN;
-            _lastCueStep = 0;
-            while (_cueQueue.TryDequeue(out _)) {}
-
-// IMPORTANT: mark active before watcher starts
-            _roundActive = true;
-            _activeCheer = FMODAudioManager.Instance.StartEventWithTimeline(
-                evt: gameEvent,                    // the single Band Cheer event
-                onMarker: OnMarker,                   
-                onStopped: () => { _roundActive = false; },
-                paramName: "Cheer",
-                paramValue: cheerIndex,            // <<< choose which section
-                attachTo: (Camera.main ? Camera.main.transform : this.transform),
-                ignoreSeekSpeed: true
-            );
-            _watchCueRoutine = StartCoroutine(WatchCueStep(_activeCheer));
-
-            // Wait until the cheer event ends (onStopped sets _roundActive = false)
-            yield return new WaitWhile(() => _roundActive);
-
-            // Score using the marker-driven counters
-            FinalizeQuarterScore(opportunitiesThisRound, combosMade);
-
-            UpdateScoreboardUI();
-
-            CleanupCheerForQuarterEnd();
-            combosMade = 0;
-            yield return new WaitForSeconds(1f);
+            maqrueePanel.SetActive(true);
+            yield return new WaitForSeconds(marqueeHoldSeconds);
+            maqrueePanel.SetActive(false);
         }
+        _audio?.StartCrowd();
+
+        if (playableGameRoot != null) playableGameRoot.SetActive(false);
+for (int q = 1; q <= 4; q++)
+{
+    // ---- Quarter intro scoreboard ----
+    currentQuarter = q;
+    UpdateScoreboardUI();
+
+    CleanupCheerForQuarterEnd();
+
+    if (playableGameRoot != null) playableGameRoot.SetActive(false);
+    if (scoreboardUI != null) scoreboardUI.SetActive(true);
+
+    // let it actually display
+    yield return new WaitForSecondsRealtime(quarterIntroScoreboardSeconds);
+    
+    if (scoreboardUI != null) scoreboardUI.SetActive(false);
+    if (playableGameRoot != null) playableGameRoot.SetActive(true);
+
+    // refresh backend (in case you’re testing different paths)
+    _audio = audioSelector != null ? audioSelector.Backend : _audio;
+
+    // ---- Countdown + cheer ----
+    int cheerCount = _audio != null ? _audio.CheerCount : 0;
+    int cheerIndex = (cheerCount > 0) ? Random.Range(0, cheerCount) : 0;
+
+    bool countdownDone = false;
+    _audio?.PlayCountdown(() => countdownDone = true);
+    while (!countdownDone) yield return null;
+
+    _roundActive = true;
+    _audio?.StartCheer(cheerIndex, onCue: OnMarker, onEnded: () => { _roundActive = false; });
+
+    float maxRoundSeconds = 60f;
+    float t0 = Time.realtimeSinceStartup;
+    while (_roundActive && (Time.realtimeSinceStartup - t0) < maxRoundSeconds)
+        yield return null;
+
+    if (_roundActive)
+    {
+        _roundActive = false;
+        _audio?.StopCheer(true);
+    }
+
+    // ---- Quarter end scoreboard ----
+    FinalizeQuarterScore(opportunitiesThisRound, combosMade);
+    UpdateScoreboardUI();
+
+    CleanupCheerForQuarterEnd();
+
+    if (playableGameRoot != null) playableGameRoot.SetActive(false);
+    if (scoreboardUI != null) scoreboardUI.SetActive(true);
+
+    yield return new WaitForSecondsRealtime(quarterEndScoreboardSeconds);
+
+    if (scoreboardUI != null) scoreboardUI.SetActive(false);
+    // (next loop will show the next quarter intro scoreboard)
+}
 
         EndGame();
     }
 
     private void OnMarker(string name, int positionMs)
     {
-
         if (!_roundActive) return;
-        if (_markerBusy)   return; // ignore overlapping markers if a sequence is in flight
+        if (_markerBusy) return;
+
         markersThisRound++;
-        // rotate leader each marker
+
         int leaderIdx = _markerLeaderIdx % Mathf.Max(1, matchSequences.Count);
         _markerLeaderIdx++;
 
@@ -500,6 +559,7 @@ private void ResetAllLeadersVisuals()
         if (_markerCo != null) StopCoroutine(_markerCo);
         _markerCo = StartCoroutine(RunMarkerTwoStepSequence(leaderIdx));
     }
+
     private IEnumerator RunMarkerTwoStepSequence(int leaderIdx)
 {
     // Safety
@@ -514,14 +574,16 @@ private void ResetAllLeadersVisuals()
     MoveSpotlight(leaderIdx); // both exist already
     var leader = matchSequences[leaderIdx].cheerleader;
     var leaderCheer = matchSequences[leaderIdx].cheerleader.cheer;
-    leader.countdownBar?.StartWindow(inputWindowSeconds);
+    //leader.countdownBar?.StartWindow(inputWindowSeconds);
     // STEP 1: Direction
     var dirA = RandomDir();
     var dirB = RandomDirNot(dirA);
     ResetGlyphTintAndHide(leaderIdx);
     SetGlyphVisible(leaderIdx, true, false);
     SetGlyphSpriteAndColor(leaderIdx, true, dirA, highlightColor);
-   
+    var glyphImgA = leader.glyphA;
+    StartGlyphFade(glyphImgA, inputWindowSeconds);
+
     if (leaderCheer) leaderCheer.SetCombo(AnticipationForDir(dirA));
     yield return null; 
     // Open window #1
@@ -544,6 +606,8 @@ private void ResetAllLeadersVisuals()
         if (inputBridge.TryGetNextDirection(out var d, out var ts))
         {
             gotA   = true;
+            StopGlyphFade(glyphImgA);
+            SetGlyphAlpha(glyphImgA, 1f);
             rightA = (d == dirA);
         }
         yield return null;
@@ -555,14 +619,14 @@ private void ResetAllLeadersVisuals()
         if (leaderCheer) leaderCheer.SetCombo(PoseForDir(dirA));
         amplification += amplificationPerSuccess; // your crowd amp
         combosMade++;                             // your scoring
-        leader.countdownBar?.CompleteSuccess();
+        //leader.countdownBar?.CompleteSuccess();
         yield return new WaitForSecondsRealtime(fadeAfterSuccess);
     }
     else
     {
         // set fail-colored version of the same dir
         SetGlyphSpriteAndColor(leaderIdx, true, dirA, failColor);
-        leader.countdownBar?.CompleteFail();
+      //  leader.countdownBar?.CompleteFail();
         yield return new WaitForSecondsRealtime(fadeAfterFail);
     }
 
@@ -582,6 +646,10 @@ private void ResetAllLeadersVisuals()
         if (inputBridge.TryGetNextDirection(out var d, out var ts))
         {
             gotB   = true;
+            var glyphImgB = leader.glyphB;
+            StopGlyphFade(glyphImgB);
+            SetGlyphAlpha(glyphImgB, 1f);
+
             rightB = (d == dirB);
         }
         yield return null;
@@ -594,13 +662,13 @@ private void ResetAllLeadersVisuals()
         if (leaderCheer) leaderCheer.SetCombo(PoseForDir(dirB));
         amplification += amplificationPerSuccess;
         combosMade++;
-        leader.countdownBar?.CompleteSuccess();
+      //  leader.countdownBar?.CompleteSuccess();
         yield return new WaitForSecondsRealtime(fadeAfterSuccess);
     }
     else
     {
         SetGlyphSpriteAndColor(leaderIdx, false, dirB, failColor);
-        leader.countdownBar?.CompleteFail();
+   //     leader.countdownBar?.CompleteFail();
 
         if (leaderCheer) leaderCheer.SetCombo(CheerCombo.Default);
         yield return new WaitForSecondsRealtime(fadeAfterFail);
@@ -655,12 +723,14 @@ private void ResetGlyphTintAndHide(int leaderIdx)
         leader.glyphA.color = highlightColor; // your default “ready” tint
         leader.glyphA.gameObject.SetActive(false);
         leader.glyphA.sprite = null;          // optional: clear sprite to be explicit
+        StopGlyphFade(leader.glyphA);
     }
     if (leader.glyphB)
     {
         leader.glyphB.color = highlightColor;
         leader.glyphB.gameObject.SetActive(false);
         leader.glyphB.sprite = null;
+        StopGlyphFade(leader.glyphB);
     }
 
     // make sure no stale directions bleed into feedback code
@@ -678,6 +748,9 @@ private void ResetGlyphTintAndHide(int leaderIdx)
         // Reuse your sprite getters & colors
         img.sprite = GetGlyphSprite(dir);                 // exists in your file
         img.color  = color;                               // success/fail/highlight
+        float a = img.color.a;
+        color.a = a;
+        img.color = color;
     }
 
     private CheerDirection RandomDir()
@@ -694,39 +767,6 @@ private void ResetGlyphTintAndHide(int leaderIdx)
     }
 
     private int _dbgTick; // add near your other fields
-    private IEnumerator WatchCueStep(FMOD.Studio.EventInstance inst)
-    {
-        const double leadAheadSec = 0.12; // give the main coroutine time to show glyphs etc.
-        int lastMs = -1;
-
-        while (_roundActive)
-        {
-            if (!inst.isValid()) { Debug.LogWarning("[CUE] inst invalid; watcher exit"); yield break; }
-
-            inst.getPlaybackState(out var st);
-            if (st == FMOD.Studio.PLAYBACK_STATE.STOPPED) { Debug.Log("[CUE] playback stopped"); yield break; }
-
-            inst.getTimelinePosition(out int ms);
-
-            if (double.IsNaN(_baseDSP))
-                _baseDSP = AudioSettings.dspTime - (ms / 1000.0);
-
-            if (inst.getParameterByName("CueStep", out float value) == FMOD.RESULT.OK)
-            {
-                int cue = Mathf.RoundToInt(value);
-                if (cue < _lastCueStep) _lastCueStep = -1;
-                if (cue != _lastCueStep)
-                {
-                    double abs = _baseDSP + (ms / 1000.0) + leadAheadSec; // <-- shifted into the near future
-                    _cueQueue.Enqueue(abs);
-                    _lastCueStep = cue;
-                }
-            }
-
-            lastMs = ms;
-            yield return null;
-        }
-    }
 
 
 private void FinalizeQuarterScore(int totalCombos, int combosMade)
@@ -905,16 +945,6 @@ private void FinalizeQuarterScore(int totalCombos, int combosMade)
             CheerDirection.Right => rightGlyph,
             _ => null
         };
-    }
-
-    int PickCheerIndex()
-    {
-        if (cheers == null || cheers.Length == 0) return -1;
-        int idx;
-        if (cheers.Length == 1) return 0;
-        do { idx = Random.Range(0, cheers.Length); } while (idx == _lastCheerIdx);
-        _lastCheerIdx = idx;
-        return idx;
     }
 
 

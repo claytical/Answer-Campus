@@ -82,10 +82,8 @@
 			<destination>{1978c9cc-0a65-48c6-8f42-285e909cf4e7}</destination>
 		</relationship>
 		<relationship name="markers">
-			<destination>{efba65da-ac41-4a0d-b010-dfa3c124c85a}</destination>
 			<destination>{64c0a83d-0b56-464c-ba78-4dc817e2371d}</destination>
 			<destination>{3e1bfb6f-9603-4e2d-8f49-a0362d6f7828}</destination>
-			<destination>{ac5c4197-20c9-48b8-8677-6cb6bfbda30e}</destination>
 			<destination>{e235bb06-273b-4ca2-84f8-ac8b1d09b27a}</destination>
 			<destination>{b52cc201-d9da-4e95-b3fb-27d5cdf03331}</destination>
 			<destination>{6da8e305-83cc-476a-a093-3193810099d5}</destination>
@@ -193,20 +191,6 @@
 			<destination>{4a49bf20-59e2-4cb7-9779-931e506af1b9}</destination>
 		</relationship>
 	</object>
-	<object class="NamedMarker" id="{efba65da-ac41-4a0d-b010-dfa3c124c85a}">
-		<property name="position">
-			<value>16</value>
-		</property>
-		<property name="name">
-			<value>CHEER0_END</value>
-		</property>
-		<relationship name="timeline">
-			<destination>{b120549c-df9b-4980-ae1b-1c1e3c2ecf7a}</destination>
-		</relationship>
-		<relationship name="markerTrack">
-			<destination>{e832de26-401e-473d-bf5f-24a182e35fd3}</destination>
-		</relationship>
-	</object>
 	<object class="NamedMarker" id="{64c0a83d-0b56-464c-ba78-4dc817e2371d}">
 		<property name="position">
 			<value>21</value>
@@ -227,20 +211,6 @@
 		</property>
 		<property name="name">
 			<value>CHEER0_START</value>
-		</property>
-		<relationship name="timeline">
-			<destination>{b120549c-df9b-4980-ae1b-1c1e3c2ecf7a}</destination>
-		</relationship>
-		<relationship name="markerTrack">
-			<destination>{e832de26-401e-473d-bf5f-24a182e35fd3}</destination>
-		</relationship>
-	</object>
-	<object class="NamedMarker" id="{ac5c4197-20c9-48b8-8677-6cb6bfbda30e}">
-		<property name="position">
-			<value>37</value>
-		</property>
-		<property name="name">
-			<value>CHEER1_END</value>
 		</property>
 		<relationship name="timeline">
 			<destination>{b120549c-df9b-4980-ae1b-1c1e3c2ecf7a}</destination>

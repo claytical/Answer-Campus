@@ -20,6 +20,7 @@ namespace VNEngine
                 Debug.Log("New Text Message From : " + textMessage.from);
                 messages.Add(textMessage);
                 PlayerPrefsExtra.SetList("messages", messages);
+                StatsManager.Set_Boolean_Stat("PhoneHasNewActivity", true);
             }
             else
             {

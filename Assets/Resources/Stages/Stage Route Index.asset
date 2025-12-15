@@ -68,7 +68,7 @@ MonoBehaviour:
   - character: 1
     location: {fileID: 11400000, guid: af469bbe3d0ae48228f9605b4b4ad02c, type: 2}
     stage: 4
-    unlockWeek: 13
+    unlockWeek: 12
   - character: 4
     location: {fileID: 11400000, guid: 13ecdb615fef44fa39beb0c740c54ec6, type: 2}
     stage: 6

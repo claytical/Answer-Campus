@@ -28,7 +28,7 @@ public static class FootballScheduler
     public static void GenerateSchedule()
     {
         List<FootballGame> schedule = new List<FootballGame>();
-        List<int> possibleWeeks = new List<int> { 2, 4, 6, 9, 12};
+        List<int> possibleWeeks = new List<int> { 3, 5, 9, 13, 14, 15};
         Shuffle(possibleWeeks);
 
         for (int i = 0; i < possibleWeeks.Count; i++)
