@@ -12,20 +12,23 @@ public class QuickReply
 public class TextMessage : System.IEquatable<TextMessage>
 {
     public Character from;
-    public string body;   
+    public string body;
     public long unixTime;
     public bool isPlayer;
     public string location;
-    public List<QuickReply> quickReplies; 
-    public TextMessage positiveResponseBranch; // The single follow-up message if the player responds positively
-    public TextMessage negativeResponseBranch; // The single follow-up message if the player responds negatively
 
-    // Constructor
+    public int unlockWeek; // 0 = immediately visible
+
+    public List<QuickReply> quickReplies;
+    public TextMessage positiveResponseBranch;
+    public TextMessage negativeResponseBranch;
+
     public TextMessage(Character from, string message, string location)
     {
         this.from = from;
         this.body = message;
         this.location = location;
+        this.unlockWeek = 0;
     }
 
     // Retrieve the next message based on the player's choice (positive or negative)

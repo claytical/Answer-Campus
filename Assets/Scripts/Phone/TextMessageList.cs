@@ -28,15 +28,28 @@ public static class TextThreads
         PlayerPrefsExtra.SetList(Key, all);
         PlayerPrefs.Save();
     }
-
     public static List<TextMessage> GetThread(Character other)
     {
-        var all = GetAll();
-        // thread = msgs from NPC 'other' or from player to 'other'
-        return all
-            .Where(m => (m.from == other && !m.isPlayer) || (m.isPlayer && m.from == other))
+        int week = UnityEngine.Mathf.RoundToInt(VNEngine.StatsManager.Get_Numbered_Stat("Week"));
+
+        return GetAll()
+            .Where(m =>
+                ((m.from == other && !m.isPlayer) || (m.isPlayer && m.from == other)) &&
+                (m.unlockWeek <= 0 || week >= m.unlockWeek))
             .OrderBy(m => m.unixTime)
             .ToList();
+    }
+    public static void AddNpcMessage(Character from, string body, string location, int unlockWeek = 0, List<QuickReply> replies = null)
+    {
+        var all = GetAll();
+        var msg = new TextMessage(from, body, location);
+        msg.unixTime = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+        msg.isPlayer = false;
+        msg.quickReplies = replies;
+        msg.unlockWeek = unlockWeek;
+
+        all.Add(msg);
+        SaveAll(all);
     }
 
 

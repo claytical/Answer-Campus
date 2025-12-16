@@ -1,4 +1,6 @@
 // TextThreadPanel.cs
+
+using System;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
@@ -133,7 +135,12 @@ public void Render()
             {
                 TextThreads.SendPlayerResponse(current, qr);
 
-                if (!string.IsNullOrWhiteSpace(pendingTargetScene))
+                // Convention: payload "decline" means stay in phone.
+                bool isDecline =
+                    !string.IsNullOrWhiteSpace(qr.payload) &&
+                    string.Equals(qr.payload.Trim(), "decline", StringComparison.OrdinalIgnoreCase);
+
+                if (!isDecline && !string.IsNullOrWhiteSpace(pendingTargetScene))
                 {
                     Hide();
                     LocationRouter.Go(pendingTargetScene);
@@ -143,6 +150,7 @@ public void Render()
                     Render();
                 }
             });
+
         }
         quickReplyRoot.gameObject.SetActive(true);
 

@@ -21,6 +21,8 @@ public class FMODAudioManager : MonoBehaviour
     private AudioSource audioSource;
     public FMOD.Studio.EventInstance currentMusic;
     public FMOD.Studio.EventInstance currentAmbient;
+    private Guid _currentMusicGuid;
+    private Guid _currentAmbientGuid;
 
     private Coroutine currentFadeOut;
     private EventInstance nextMusicToPlay;
@@ -50,14 +52,38 @@ public class FMODAudioManager : MonoBehaviour
         public bool Equals(EventInstance a, EventInstance b) => a.handle == b.handle;
         public int GetHashCode(EventInstance e) => e.handle.GetHashCode();
     }
-    public void PlayMusic(EventReference eventName, float fadeDuration = 1f)
+    public void PlayMusic(EventReference evt, float fadeDuration = 1f)
     {
-        StopAllAudio(fadeDuration);
+        if (evt.IsNull) return;
 
+        if (_currentMusicGuid == evt.Guid && currentMusic.isValid())
+            return;
+
+        _currentMusicGuid = evt.Guid;
+
+        // IMPORTANT: if you adopted StopAllAudio() earlier, do NOT nuke ambient here
+        // unless you explicitly want music to always kill ambient.
         if (currentMusicCoroutine != null)
             StopCoroutine(currentMusicCoroutine);
 
-        currentMusicCoroutine = StartCoroutine(TransitionToNewMusic(eventName, fadeDuration));
+        currentMusicCoroutine = StartCoroutine(TransitionToNewMusic(evt, fadeDuration));
+    }
+
+    public void PlayAmbient(EventReference evt, float fadeDuration = 1f)
+    {
+        if (evt.IsNull) return;
+
+        if (_currentAmbientGuid == evt.Guid && currentAmbient.isValid())
+            return;
+
+        _currentAmbientGuid = evt.Guid;
+
+        if (currentAmbient.isValid())
+            StartCoroutine(FadeOutAndStop(currentAmbient, fadeDuration));
+
+        currentAmbient = RuntimeManager.CreateInstance(evt);
+        allCreatedInstances.Add(currentAmbient);
+        currentAmbient.start();
     }
     public EventInstance StartEventWithTimeline(EventReference evt, Action<string,int> onMarker = null, Action<TIMELINE_BEAT_PROPERTIES> onBeat = null, Action onStopped = null, string paramName = null, float? paramValue = null, Transform attachTo = null, bool ignoreSeekSpeed = true) {
         // Create instance

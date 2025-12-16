@@ -18143,7 +18143,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   destroy_when_finished: 0
-  start_conversation_when_done: {fileID: 1231348335}
+  start_conversation_when_done: {fileID: 939276119}
   cur_node: 0
   active: 0
   finished_conversation: 0
@@ -41676,6 +41676,55 @@ MonoBehaviour:
   fade_in_time: 0.1
   destination: 3
   custom_position: {fileID: 4909160718463724324}
+--- !u!1 &921699462
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 921699463}
+  - component: {fileID: 921699464}
+  m_Layer: 0
+  m_Name: Exit All Actors
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &921699463
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 921699462}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 939276118}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &921699464
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 921699462}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 70b3d97893e6ad141a9c4ad3ab99469a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::VNEngine.ExitAllActorsNode
+  go_to_next_node: 1
+  executed_from_load: 0
+  slide_out: 0
+  fade_out: 0
+  wait_for_actors_to_exit: 1
 --- !u!1 &925050625
 GameObject:
   m_ObjectHideFlags: 0
@@ -42213,6 +42262,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
+  - {fileID: 921699463}
   - {fileID: 1993139828}
   m_Father: {fileID: 2117367451}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -53303,7 +53353,7 @@ MonoBehaviour:
   Button_Events:
   - m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 642727324}
+      - m_Target: {fileID: 1017627351}
         m_TargetAssemblyTypeName: VNEngine.ConversationManager, Assembly-CSharp
         m_MethodName: Start_Conversation
         m_Mode: 1
@@ -60842,6 +60892,11 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 050186d06c7d3ba4ebfcd126475dd89e, type: 3}
+--- !u!224 &1450658869 stripped
+RectTransform:
+  m_CorrespondingSourceObject: {fileID: 7509519032867895242, guid: 050186d06c7d3ba4ebfcd126475dd89e, type: 3}
+  m_PrefabInstance: {fileID: 1450658868}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1453237959
 GameObject:
   m_ObjectHideFlags: 0
@@ -70604,7 +70659,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   destroy_when_finished: 0
-  start_conversation_when_done: {fileID: 1231348335}
+  start_conversation_when_done: {fileID: 939276119}
   cur_node: 0
   active: 0
   finished_conversation: 0
@@ -90945,7 +91000,7 @@ MonoBehaviour:
   entrance_type: 1
   fade_in_time: 1
   destination: 3
-  custom_position: {fileID: 0}
+  custom_position: {fileID: 1450658869}
 --- !u!1 &1336086109155300371
 GameObject:
   m_ObjectHideFlags: 0
@@ -117413,7 +117468,7 @@ MonoBehaviour:
   entrance_type: 1
   fade_in_time: 0.1
   destination: 3
-  custom_position: {fileID: 0}
+  custom_position: {fileID: 1450658869}
 --- !u!114 &7062988169949547414
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -118312,7 +118367,7 @@ MonoBehaviour:
   entrance_type: 1
   fade_in_time: 1
   destination: 3
-  custom_position: {fileID: 0}
+  custom_position: {fileID: 1450658869}
 --- !u!114 &7312584353494721202
 MonoBehaviour:
   m_ObjectHideFlags: 0

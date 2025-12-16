@@ -52,7 +52,7 @@ public class FivePositionsGameManager : MonoBehaviour
     public float letterSpeed = 2f;
     [Header("No-Timer Rules")]
     public int strikesPerWord = 3;
-    public int maxWordAttempts = 10;
+    public int maxWordAttempts = 5;
 
     private int strikesThisWord = 0;
     private int wordsAttempted = 0;
@@ -215,6 +215,8 @@ public class FivePositionsGameManager : MonoBehaviour
         gameIsOver = false;
         // Start the timer coroutine right away 
         StartCoroutine(GameTimerCoroutine());
+        if (questionLoader != null)
+            questionLoader.currentMode = currentMode;
         questionLoader.LoadQuestionsForMode();
         // Start the first countdown
         StartCoroutine(CountdownCoroutine());
@@ -241,16 +243,6 @@ public class FivePositionsGameManager : MonoBehaviour
 
                     }
                 }
-            }
-            else {
-                if (currentMode == GameMode.Group || currentMode == GameMode.Exam)
-                {
-                    if (AllBoxesFilled() || wrongGuessCount >= maxWrongGuesses)
-                    {
-                        StartCoroutine(EndGame());
-                    }
-                }
-
             }
         }
     }
@@ -790,6 +782,8 @@ public class FivePositionsGameManager : MonoBehaviour
     public void SetMode(GameMode mode)
     {
         currentMode = mode;
+        if (questionLoader != null)
+            questionLoader.currentMode = mode;
 
         switch (mode)
         {

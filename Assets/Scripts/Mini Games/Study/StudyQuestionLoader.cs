@@ -90,6 +90,21 @@ public class StudyQuestionLoader : MonoBehaviour
             return;
         }
 
+        // 1) Prefer explicit exam id (e.g., "midterm", "final")
+        string examId = StatsManager.Get_String_Stat("CurrentExamId");
+        if (!string.IsNullOrWhiteSpace(examId))
+        {
+            var byId = all.FirstOrDefault(w => string.Equals(w.week, examId.Trim(), StringComparison.OrdinalIgnoreCase));
+            if (byId != null && byId.questions != null)
+            {
+                currentQuestions = byId.questions.Where(q => q != null).Where(q => IsValidAnswer(q.answer)).ToList();
+                ResetAlreadyUsedFlags();
+                Debug.Log($"[StudyQuestionLoader] Loaded {currentQuestions.Count} exam questions for id='{examId}'.");
+                return;
+            }
+        }
+
+        // 2) Fallback: numeric week
         int currentWeek = GetCurrentWeekStat();
         if (currentWeek <= 0) currentWeek = 1;
 
@@ -99,8 +114,18 @@ public class StudyQuestionLoader : MonoBehaviour
             .Where(q => IsValidAnswer(q.answer))
             .ToList();
 
+        // 3) Final fallback: week "1"
+        if (currentQuestions.Count == 0)
+        {
+            var wk1 = all.FirstOrDefault(w => w.week == "1");
+            currentQuestions = (wk1?.questions ?? new List<QuestionAnswerPair>())
+                .Where(q => q != null)
+                .Where(q => IsValidAnswer(q.answer))
+                .ToList();
+        }
+
         ResetAlreadyUsedFlags();
-        Debug.Log($"[StudyQuestionLoader] Loaded {currentQuestions.Count} exam questions for week={currentWeek}.");
+        Debug.Log($"[StudyQuestionLoader] Loaded {currentQuestions.Count} exam questions (week={currentWeek}, id='{examId}').");
     }
 
     public QuestionAnswerPair GetRandomQuestion()

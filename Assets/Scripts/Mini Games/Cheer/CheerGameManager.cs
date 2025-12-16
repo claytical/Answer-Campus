@@ -61,7 +61,6 @@ public static void ScoreQuarter(int totalCombos, int combosMade, out int homeSco
         totalCombos = Mathf.Max(0, totalCombos);
         combosMade  = Mathf.Clamp(combosMade, 0, totalCombos);
         if (totalCombos == 0) return;
-
         int homeDrives = combosMade;
         int awayDrives = totalCombos - combosMade;
 
@@ -526,9 +525,10 @@ for (int q = 1; q <= 4; q++)
         _roundActive = false;
         _audio?.StopCheer(true);
     }
+    int successfulMarkers = combosMade / 2;
 
     // ---- Quarter end scoreboard ----
-    FinalizeQuarterScore(opportunitiesThisRound, combosMade);
+    FinalizeQuarterScore(markersThisRound, successfulMarkers);
     UpdateScoreboardUI();
 
     CleanupCheerForQuarterEnd();

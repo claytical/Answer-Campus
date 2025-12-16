@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   characterName: Blanche
   promptType: 1
-  preDropHangTime: 0.5
+  preDropHangTime: 1
   minSpawnInterval: 1
   maxSpawnInterval: 3
   chanceOfCorrectLetter: 0.5
