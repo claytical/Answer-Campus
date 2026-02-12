@@ -31,11 +31,6 @@ public class CutsceneScript : MonoBehaviour
         {
             display.text = sentences[0];
         }
-
-        // Start FMOD audio if needed
-        //fmodEvent = RuntimeManager.CreateInstance("event:/YourCutsceneTrack"); // Replace with your FMOD event
-        //fmodEvent.start();
-
         cutsceneRoutine = StartCoroutine(RunCutscene());
     }
 
@@ -88,7 +83,6 @@ public class CutsceneScript : MonoBehaviour
             return img == null || img.color == Color.black;
         });
 
-//        StartCoroutine(FadeOutFMOD());
         EndSequence();
     }
 

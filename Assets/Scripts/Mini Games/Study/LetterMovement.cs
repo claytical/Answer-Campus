@@ -13,7 +13,8 @@ public class LetterMovement : MonoBehaviour {
     private float moveSpeed;
     private AudioSource audioSource;
     public AudioClip eraserClip;
-
+    private float hangTimeRemaining;
+    private bool hasStartedFalling;
     /// <summary>
     /// Called right after instantiating a Letter prefab,
     /// sets up everything needed for it to move and know its manager.
@@ -23,17 +24,26 @@ public class LetterMovement : MonoBehaviour {
         int boxIndex,
         char letterChar,
         Vector3 targetPos,
-        float moveSpeed
+        float moveSpeed, 
+        float preDropHangTime
     ) {
         this.manager = manager;
         this.boxIndex = boxIndex;
         this.letterChar = letterChar;
         this.targetPos = targetPos;
         this.moveSpeed = moveSpeed;
-//        audioSource = FMODAudioManager.Instance.GetAudioSource();
+        hangTimeRemaining = Mathf.Max(0f, preDropHangTime);
+        hasStartedFalling = (hangTimeRemaining <= 0f);
     }
 
     private void Update() {
+        if (!hasStartedFalling)
+        {
+            hangTimeRemaining -= Time.deltaTime;
+            if (hangTimeRemaining <= 0f) hasStartedFalling = true;
+            return;
+        }
+
         // Move letter towards the box
         transform.position = Vector3.MoveTowards(
             transform.position,

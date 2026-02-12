@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<objects serializationModel="Studio.02.03.00">
+	<object class="ParameterPreset" id="{fbdca1d1-066a-4a26-b355-ccc33865a906}">
+		<property name="name">
+			<value>CueStep</value>
+		</property>
+		<relationship name="folder">
+			<destination>{172a9c95-d4ae-479c-95d4-8efe6f611c9f}</destination>
+		</relationship>
+		<relationship name="parameter">
+			<destination>{a5c86a6c-edb1-4f18-8707-74547e2f81e7}</destination>
+		</relationship>
+	</object>
+	<object class="GameParameter" id="{a5c86a6c-edb1-4f18-8707-74547e2f81e7}">
+		<property name="maximum">
+			<value>32</value>
+		</property>
+		<property name="initialValue">
+			<value>0</value>
+		</property>
+	</object>
+</objects>

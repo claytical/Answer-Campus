@@ -8,7 +8,7 @@ namespace VNEngine.EditorTools
 {
     [CustomEditor(typeof(Node), true)] // Applies to Node and all subclasses
     [CanEditMultipleObjects]
-    public class NodeEditor : Editor
+    public class NodeEditor : UnityEditor.Editor
     {
         public override void OnInspectorGUI()
         {

@@ -6,7 +6,7 @@ namespace VNEngine
 {
     // Give this script a custom UI interface used in conjunction with the new Stats ssystem (see AlterStatNode and StatsManager)
     [CustomEditor(typeof(IfNode))]
-    public class IfNodeEditor : Editor
+    public class IfNodeEditor : UnityEditor.Editor
     {
         float default_label_width;
 

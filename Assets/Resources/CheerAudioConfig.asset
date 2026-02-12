@@ -1,0 +1,49 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8cb4b34e9cad04ff6889b0db8f191744, type: 3}
+  m_Name: CheerAudioConfig
+  m_EditorClassIdentifier: Assembly-CSharp::CheerAudioConfig
+  crowdLoop: {fileID: 8300000, guid: 44ca3bd98c26c4076b8390c9b922c942, type: 3}
+  countdownOneShot: {fileID: 8300000, guid: 90947c3430ff54131ab9cce76bde4c2f, type: 3}
+  cheers:
+  - id: Cheer2
+    clip: {fileID: 8300000, guid: f32df51d4c1474bf1858a244f01ce737, type: 3}
+    cueTimesSeconds:
+    - 0
+    - 1.85
+    - 3.856
+    - 6.452
+    - 8.948
+    - 11.874
+  - id: Cheer5
+    clip: {fileID: 8300000, guid: c3c3ad49c7d6a428487808cb01c9682b, type: 3}
+    cueTimesSeconds:
+    - 0
+    - 2.6
+    - 5.74
+    - 7.302
+    - 8.805
+  - id: Cheer4
+    clip: {fileID: 8300000, guid: 34e78dfe8110b476c9764650905e64c2, type: 3}
+    cueTimesSeconds:
+    - 0
+    - 1.5
+    - 2.9
+    - 3.7
+    - 4.46
+    - 5.14
+    - 5.87
+    - 6.6
+    - 7.38
+    - 8.1
+    - 8.8
+    - 0.010297483

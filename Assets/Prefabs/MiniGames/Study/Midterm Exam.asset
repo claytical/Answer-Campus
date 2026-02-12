@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2aa500e1ce0194cfa802bc3e355c41cb, type: 3}
+  m_Name: Midterm Exam
+  m_EditorClassIdentifier: 
+  characterName: Blanche
+  promptType: 1
+  preDropHangTime: 1
+  minSpawnInterval: 1
+  maxSpawnInterval: 3
+  chanceOfCorrectLetter: 0.5
+  showTimer: 1
+  allowHints: 0
+  customQuestions: []
+  timerDuration: 60
+  strikesPerWord: 3
+  maxWordAttempts: 4

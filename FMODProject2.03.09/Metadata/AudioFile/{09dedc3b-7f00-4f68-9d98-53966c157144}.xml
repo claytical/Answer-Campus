@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<objects serializationModel="Studio.02.03.00">
+	<object class="AudioFile" id="{09dedc3b-7f00-4f68-9d98-53966c157144}">
+		<property name="assetPath">
+			<value>FX_StadiumCrowd2.wav</value>
+		</property>
+		<property name="isStreaming">
+			<value>true</value>
+		</property>
+		<property name="frequencyInKHz">
+			<value>96</value>
+		</property>
+		<property name="channelCount">
+			<value>2</value>
+		</property>
+		<property name="length">
+			<value>215.65333333333334</value>
+		</property>
+		<relationship name="masterAssetFolder">
+			<destination>{33fc172c-016a-4235-9242-e7ee3cd753a4}</destination>
+		</relationship>
+	</object>
+</objects>

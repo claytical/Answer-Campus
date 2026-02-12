@@ -755,10 +755,8 @@ MonoBehaviour:
   switchSettingsMigration: 1
   HasSourceProject: 1
   HasPlatforms: 1
-  sourceProjectPath: ../../../Library/CloudStorage/GoogleDrive-c.ewing@miami.edu/Shared
-    drives/NERDLab/Games/Answer Campus/Music/FMOD Projects/AnswerCampus_MusicSound/AnswerCampus_MusicSound.fspro
-  sourceBankPath: ../../../Library/CloudStorage/GoogleDrive-c.ewing@miami.edu/Shared
-    drives/NERDLab/Games/Answer Campus/Music/FMOD Projects/AnswerCampus_MusicSound/Build
+  sourceProjectPath: FMODProject2.03.09/AnswerCampus_MusicSound.fspro
+  sourceBankPath: FMODProject2.03.09/Build
   sourceBankPathUnformatted: 
   BankRefreshCooldown: 5
   ShowBankRefreshWindow: 0
@@ -770,6 +768,7 @@ MonoBehaviour:
   TargetAssetPath: FMODBanks
   TargetBankFolder: 
   EventLinkage: 1
+  SerializeGUIDsOnly: 0
   LoggingLevel: 2
   SpeakerModeSettings: []
   SampleRateSettings: []
@@ -795,7 +794,7 @@ MonoBehaviour:
   EnableErrorCallback: 0
   SharedLibraryUpdateStage: 0
   SharedLibraryTimeSinceStart: 0
-  CurrentVersion: 131624
+  CurrentVersion: 131849
   HideSetupWizard: 1
   LastEventReferenceScanVersion: 131624
   Platforms:

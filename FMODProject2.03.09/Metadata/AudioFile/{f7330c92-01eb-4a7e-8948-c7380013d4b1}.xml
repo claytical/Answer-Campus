@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<objects serializationModel="Studio.02.03.00">
+	<object class="AudioFile" id="{f7330c92-01eb-4a7e-8948-c7380013d4b1}">
+		<property name="assetPath">
+			<value>MX_70BPM_Charlie.wav</value>
+		</property>
+		<property name="isStreaming">
+			<value>true</value>
+		</property>
+		<property name="frequencyInKHz">
+			<value>48</value>
+		</property>
+		<property name="channelCount">
+			<value>2</value>
+		</property>
+		<property name="length">
+			<value>27.428583333333332</value>
+		</property>
+		<relationship name="masterAssetFolder">
+			<destination>{33fc172c-016a-4235-9242-e7ee3cd753a4}</destination>
+		</relationship>
+	</object>
+</objects>

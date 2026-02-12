@@ -5,6 +5,27 @@ using System;
 using UnityEngine.SceneManagement;
 using VNEngine;
 using UnityEngine.UI;
+public static class LocationRegistry
+{
+    private static readonly Dictionary<LocationData, Location> _byData = new();
+
+    public static void Register(Location loc)
+    {
+        if (loc != null && loc.data != null) _byData[loc.data] = loc;
+    }
+
+    public static void Unregister(Location loc)
+    {
+        if (loc != null && loc.data != null && _byData.TryGetValue(loc.data, out var cur) && cur == loc)
+            _byData.Remove(loc.data);
+    }
+
+    public static Location Get(LocationData data)
+    {
+        _byData.TryGetValue(data, out var loc);
+        return loc;
+    }
+}
 
 public class Location : MonoBehaviour
 {
@@ -14,42 +35,22 @@ public class Location : MonoBehaviour
     public int minutes;
     public bool played = false;
     public Image characterWaiting;
+    public LocationData data;   // ← assign in Inspector
 
-    private void Start()
+    void Awake()
     {
+        LocationRegistry.Register(this);
+    }
+
+    void OnDestroy()
+    {
+        LocationRegistry.Unregister(this);
     }
     public void GoToLocation()
     {
-        int currentWeek = (int)StatsManager.Get_Numbered_Stat("Week");
-        currentWeek++;
-        StatsManager.Set_Numbered_Stat("Week", currentWeek);
-        List<CharacterLocation> characterLocations = PlayerPrefsExtra.GetList<CharacterLocation>("characterLocations", new List<CharacterLocation>());
-        PlayerPrefsExtra.SetList<CharacterLocation>("characterLocations", characterLocations);
-
-        // Retrieve the messages list from PlayerPrefsExtra
-
-        List<TextMessage> messages = PlayerPrefsExtra.GetList<TextMessage>("messages", new List<TextMessage>());
-
-        messages = PlayerPrefsExtra.GetList<TextMessage>("messages", new List<TextMessage>());
-
-        // Find all characters associated with the specified scene
-        List<string> charactersToRemove = new List<string>();
-
-        foreach (TextMessage message in messages)
-        {
-            if (message.location == scene)
-            {
-                charactersToRemove.Add(message.from.ToString());  // Collect all characters from matching scenes
-            }
-        }
-
-        // Remove all messages where the character is in the list of characters to remove
-        messages.RemoveAll(message => charactersToRemove.Contains(message.from.ToString()));
-
-        // Save the updated list back to PlayerPrefsExtra
-        PlayerPrefsExtra.SetList("messages", messages);
-        SceneManager.LoadScene(scene);
-
+        FMODAudioManager.Instance.FadeOutAmbient(1f);
+        FMODAudioManager.Instance.FadeOutMusic(1f);
+        LocationRouter.Go(scene);
     }
     public void ClearPlayerPrefs()
     {

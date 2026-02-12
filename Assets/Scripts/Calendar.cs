@@ -1,39 +1,37 @@
-using System.Collections;
+
 using System.Collections.Generic;
 using UnityEngine;
 using VNEngine;
 using TMPro;
 using System;
-using System.Collections.Generic;
 using UnityEngine.UI;
-using Random = System.Random;
 using FMODUnity;
 using System.Linq;
 using System.Text.RegularExpressions;
-
+using UnityEngine.SceneManagement;
 [Serializable]
 
 public static class FootballScheduler
 {
     static FootballTeam[] opponents = new FootballTeam[]
     {
-        new FootballTeam("Northport University", "Grizzlies"),
+        new FootballTeam("Northport", "Grizzlies"),
         new FootballTeam("Central Tech", "Shock"),
         new FootballTeam("Valley State", "Hornets"),
         new FootballTeam("Eastern Pines", "Wolves"),
         new FootballTeam("Bayfront College", "Surge"),
         new FootballTeam("Riverside A&M", "Gators"),
         new FootballTeam("Highland University", "Stags"),
-        new FootballTeam("Metro Institute", "Titans")
+        new FootballTeam("Wheatley", "Titans")
     };
 
     public static void GenerateSchedule()
     {
         List<FootballGame> schedule = new List<FootballGame>();
-        List<int> possibleWeeks = new List<int> { 2, 3, 4, 5, 6, 7, 8, 9 };
+        List<int> possibleWeeks = new List<int> { 3, 5, 9, 13, 14, 15};
         Shuffle(possibleWeeks);
 
-        for (int i = 0; i < 8; i++)
+        for (int i = 0; i < possibleWeeks.Count; i++)
         {
             schedule.Add(new FootballGame
             {
@@ -86,7 +84,7 @@ public class FootballGameListWrapper
 public static class SemesterHelper
 {
     public const int FinalsWeek = 15;
-    public const int MidtermsWeek = 7;
+    public const int MidtermsWeek = 6;
     public const int MidtermsWarningStart = 4;
     public const int FinalsWarningStart = 5;
     public const int DaysPerWeek = 7;
@@ -95,17 +93,17 @@ public static class SemesterHelper
     {
         if (week <= 2)
             return "August";
-        else if (week > 2 && week <= 5)
+        else if (week is > 2 and <= 5)
             return "September";
-        else if (week >= 6 && week <= 9)
+        else if (week is >= 6 and <= 9)
             return "October";
-        else if (week >= 10 && week <= 14)
+        else if (week is >= 10 and <= 14)
             return "November";
-        else if (week >= 15 && week <= 16)
+        else if (week is >= 15 and <= 16)
             return "December";
         else
-        Debug.Log($"Week is {week}");
-            return "Unknown"; // Safety catch
+            Debug.Log($"Week is {week}");
+        return "Unknown"; // Safety catch
     }
 
     public static int GetDaysToCrossOut(int week)
@@ -218,9 +216,9 @@ public class Calendar : MonoBehaviour
     public TextMeshProUGUI studyPrompt;
     public Transform calendarGrid;
     public GameObject checkmark;
-    public int week;
-    public string ambientFMODEventName;
-    public string musicFMODEventName;
+    public int week; 
+    public EventReference ambientFMODEventReference;
+    public EventReference musicFMODEventReference;
     public Location finalExamLocation;
     public Characters characters;
     public GameObject finalReport;
@@ -228,76 +226,59 @@ public class Calendar : MonoBehaviour
     public Image finalCharacterImage;
 
     private bool isDay = true;
+    private static bool _isRedirecting;
     // Start is called before the first frame update
-
-    public void ToggleDaytime()
-    {
-        isDay = !isDay;
-        if (isDay)
-        {
-            for (int i = 0; i < timeImages.Length; i++)
-            {
-                if (timeImages[i].uiImage != null)
-                {
-                    timeImages[i].uiImage.sprite = timeImages[i].spriteDay;
-                }
-
-                if (timeImages[i].image != null)
-                {
-                    timeImages[0].image.sprite = timeImages[i].spriteDay;
-                }
-            }
-        }
-        else
-        {
-            for (int i = 0; i < timeImages.Length; i++)
-            {
-
-                if (timeImages[i].uiImage != null)
-                {
-                    timeImages[i].uiImage.sprite = timeImages[i].spriteNight;
-                }
-
-                if (timeImages[i].image != null)
-                {
-                    timeImages[i].image.sprite = timeImages[i].spriteNight;
-                }
-            }
-        }
-    }
     
+
+
+    private void OnEnable()
+    {
+        SceneManager.sceneLoaded += OnSceneLoaded;
+    }
+    private void OnDisable()
+    {
+        SceneManager.sceneLoaded -= OnSceneLoaded;
+    }
+    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        // We have arrived somewhere. Allow future redirects.
+        _isRedirecting = false;
+    }
+
     void Start()
     {
-        if (ambientFMODEventName != null)
+        if (!ambientFMODEventReference.IsNull)
         {
             if (FMODAudioManager.Instance != null)
             {
-                FMODAudioManager.Instance.PlayAmbient(ambientFMODEventName);
+                FMODAudioManager.Instance.PlayAmbient(ambientFMODEventReference);
             }
         }
 
-        if (musicFMODEventName != null)
+        if (!musicFMODEventReference.IsNull)
         {
             if (FMODAudioManager.Instance != null)
             {
-                FMODAudioManager.Instance.PlayMusic(musicFMODEventName);
+                FMODAudioManager.Instance.PlayMusic(musicFMODEventReference);
             }
         }
-        FMODAudioManager.Instance.PrintActiveMusicInstances();
+        GameEvents.EnsureSemesterRequiredEventsRegistered();
 
         if(StatsManager.Numbered_Stat_Exists("Week"))
         {
             week = (int)StatsManager.Get_Numbered_Stat("Week");
+            Debug.Log($"It's week {week}");
+
             if (week <= 1)
             {
+                Debug.Log("New Game, generating football schedule and exam events");
                 FootballScheduler.GenerateSchedule();
             }
+            TryRedirectToRequiredEvent();
         }
-        else
-        {
-            FootballScheduler.GenerateSchedule();
-            week = 1;
-        }
+
+        isDay = !CharacterProgressHelper.IsNight();
+        ApplyTimeOfDayVisuals();
         string json = StatsManager.Get_String_Stat("FootballSchedule");
         Debug.Log($"[Schedule JSON] {json}");
         month.text = SemesterHelper.GetMonthForWeek(week);
@@ -307,19 +288,59 @@ public class Calendar : MonoBehaviour
             studyPrompt.text = prompt;
         }
 
-        for (int i = 0; i < SemesterHelper.GetDaysToCrossOut(week); i++)
-        {
-            Instantiate(checkmark, calendarGrid);
-        }
-
-        if (week == SemesterHelper.FinalsWeek)
-        {
-            finalExamLocation.GoToLocation();
-        }
+        foreach (var evt in GameEvents.GetWeekPreview(week))
+            Debug.Log($"[Calendar Preview] Week {evt.week}: {evt.type} - {evt.label} @ {evt.location}");
 
         if (week >= SemesterHelper.FinalsWeek + 1)
         {
             EndSemester();
+        }
+    }
+    private void TryRedirectToRequiredEvent()
+    {
+        if (_isRedirecting) return;
+
+        int week = (int)StatsManager.Get_Numbered_Stat("Week");
+        var due = GameEvents.GetWeekPreview(week);
+
+        // Priority: Finals, Midterms, Football
+        EventInfo chosen = default;
+        bool hasChosen = false;
+
+        int idx = due.FindIndex(e => e.id == GameEvents.FinalsEventId);
+        if (idx >= 0) { chosen = due[idx]; hasChosen = true; }
+
+        if (!hasChosen)
+        {
+            idx = due.FindIndex(e => e.id == GameEvents.MidtermsEventId);
+            if (idx >= 0) { chosen = due[idx]; hasChosen = true; }
+        }
+        
+        if (hasChosen && !string.IsNullOrEmpty(chosen.location))
+        {
+            _isRedirecting = true;
+            LocationRouter.Go(chosen.location);
+        }
+    }
+
+
+    public void ToggleDaytime()
+    {
+        isDay = !isDay;
+        CharacterProgressHelper.SetNight(!isDay);
+        ApplyTimeOfDayVisuals();
+    }
+
+    public static List<EventInfo> GetPreviewForWeek(int week) => GameEvents.GetWeekPreview(week);
+    private void ApplyTimeOfDayVisuals()
+    {
+        for (int i = 0; i < timeImages.Length; i++)
+        {
+            if (timeImages[i].uiImage != null)
+                timeImages[i].uiImage.sprite = isDay ? timeImages[i].spriteDay : timeImages[i].spriteNight;
+
+            if (timeImages[i].image != null)
+                timeImages[i].image.sprite = isDay ? timeImages[i].spriteDay : timeImages[i].spriteNight;
         }
     }
 
@@ -346,7 +367,7 @@ public class Calendar : MonoBehaviour
         {
             if (profile.character == bestFriendEnum)
             {
-                finalCharacterImage.sprite = profile.polaroid;
+                finalCharacterImage.sprite = profile.pictureLarge;
             }
         }
         string json = StatsManager.Get_String_Stat("FootballSchedule");
@@ -398,10 +419,4 @@ public class Calendar : MonoBehaviour
         finalReport.SetActive(true);
     }
     
-
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
 }

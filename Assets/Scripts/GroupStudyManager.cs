@@ -11,7 +11,6 @@ public class GroupStudyManager : MonoBehaviour
     public void StartStudySession(string characterName)
     {
         ChallengeProfile profile = GetProfile(characterName);
-
         if (profile == null)
         {
             Debug.LogError("No profile found for " + characterName);

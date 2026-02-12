@@ -25,13 +25,15 @@ public class FivePositionsGameManager : MonoBehaviour
     [Header("Word List")] public List<WordDefinition> possibleWords;
     public StudyQuestionLoader questionLoader;
 
-    [Header("Scene References")]
+    
+    private QuestionAnswerPair _currentQuestion;
+[Header("Scene References")]
     public RectTransform[] boxPositions = new RectTransform[5];
     public TextMeshProUGUI[] boxLetterDisplays = new TextMeshProUGUI[5];
     public TextMeshProUGUI targetDefinitionText;
     public TextMeshProUGUI countdownText; // "3-2-1" countdown text
     public TextMeshProUGUI scoreText;
-    public ConversationManager endExamConversation;
+    
     private ConversationManager conversationManager;
     [Header("Prefabs/Assets")]
     public GameObject letterPrefab;
@@ -48,6 +50,12 @@ public class FivePositionsGameManager : MonoBehaviour
     public float maxSpawnInterval = 3f;
     [Range(0f, 1f)] public float chanceOfCorrectLetter = 0.3f;
     public float letterSpeed = 2f;
+    [Header("No-Timer Rules")]
+    public int strikesPerWord = 3;
+    public int maxWordAttempts = 5;
+
+    private int strikesThisWord = 0;
+    private int wordsAttempted = 0;
 
     private string targetWord = "";
     private char[] targetLetters = new char[5];
@@ -56,10 +64,14 @@ public class FivePositionsGameManager : MonoBehaviour
 
     private int score = 0;
     private AudioSource audioSource;
+    [Header("Letter Timing")]
+    public float preDropHangTime = 0.35f;
+
     [Header("Timer Settings")]
     public GameObject timers;
     public float gameDuration = 180f;       // Total game time in seconds
     public TextMeshProUGUI timerText;      // Displays remaining time
+    
     public TextMeshProUGUI penaltyText;    // Briefly shows "-0:20" or similar
     public float penaltyTime = 5f;        // Seconds to remove on incorrect answer
     public GameObject studyGameParent;       // Panel to show when time runs out
@@ -74,14 +86,28 @@ public class FivePositionsGameManager : MonoBehaviour
     private bool isTimerPaused = false;
     public List<int> activeColumns = new List<int>();
     private List<GameObject> boxVisuals = new List<GameObject>();
-    
+    public ChallengeProfile pendingChallengeProfile;
+    public ConversationManager pendingEndConversation;
+
     public void Initialize()
     {
-//        audioSource = FMODAudioManager.Instance.GetAudioSource();
         SetMode(currentMode);
         SpawnVisuals();
-        StartCoroutine(DelayedGameStart());
     }
+
+    public void LaunchExam()
+    {
+        Initialize();
+        // Ensure this does NOT auto-start elsewhere (remove any auto StartGame() in Initialize)
+        //SetMode(GameMode.Exam);
+
+        if (pendingChallengeProfile != null)
+            ConfigureChallenge(pendingChallengeProfile);
+
+        StartGame();
+    }
+
+
     private void SpawnVisuals()
     {
         for (int i = 0; i < boxPositions.Length; i++)
@@ -189,7 +215,9 @@ public class FivePositionsGameManager : MonoBehaviour
         gameIsOver = false;
         // Start the timer coroutine right away 
         StartCoroutine(GameTimerCoroutine());
-        questionLoader.LoadQuestionsForCurrentWeek();
+        if (questionLoader != null)
+            questionLoader.currentMode = currentMode;
+        questionLoader.LoadQuestionsForMode();
         // Start the first countdown
         StartCoroutine(CountdownCoroutine());
         
@@ -215,16 +243,6 @@ public class FivePositionsGameManager : MonoBehaviour
 
                     }
                 }
-            }
-            else {
-                if (currentMode == GameMode.Group || currentMode == GameMode.Exam)
-                {
-                    if (AllBoxesFilled() || wrongGuessCount >= maxWrongGuesses)
-                    {
-                        StartCoroutine(EndGame());
-                    }
-                }
-
             }
         }
     }
@@ -343,7 +361,8 @@ public class FivePositionsGameManager : MonoBehaviour
                 selectedIndex,
                 letterToSpawn,
                 boxPositions[selectedIndex].position,
-                letterSpeed
+                letterSpeed,
+                preDropHangTime
             );
 
             // Wait before next spawn
@@ -372,7 +391,17 @@ public class FivePositionsGameManager : MonoBehaviour
 
     private void StartNewRound()
     {
+        wordsAttempted++;
+        strikesThisWord = 0;
+
+        if (maxWordAttempts > 0 && wordsAttempted > maxWordAttempts)
+        {
+            StartCoroutine(EndGame());
+            return;
+        }
+
         QuestionAnswerPair question = SelectRandomQuestion();
+        _currentQuestion = question;
         if (question != null)
         {
             targetWord = question.answer.ToLower(); // Ensure lowercase for consistency
@@ -409,14 +438,16 @@ public class FivePositionsGameManager : MonoBehaviour
         minSpawnInterval = profile.minSpawnInterval;
         maxSpawnInterval = profile.maxSpawnInterval;
         chanceOfCorrectLetter = profile.chanceOfCorrectLetter;
-
+        preDropHangTime = profile.preDropHangTime;
+        strikesPerWord = profile.strikesPerWord;
+        maxWordAttempts = profile.maxWordAttempts;
         // timers.SetActive(profile.showTimer);
         timers.SetActive(true);
 
         // Decide whether we're using definitions or questions
         bool useDefinitions = profile.promptType == ChallengeProfile.PromptType.Definitions;
         questionLoader.useDefinitions = useDefinitions;
-        questionLoader.LoadQuestionsForCurrentWeek(); // fallback
+        questionLoader.LoadQuestionsForMode(); // fallback
     }
 
     private QuestionAnswerPair SelectRandomQuestion()
@@ -440,6 +471,61 @@ public class FivePositionsGameManager : MonoBehaviour
             boxFilled[i] = false;
         }
     }
+    private void ResetAttemptUIAndState()
+    {
+        // Clear UI and correctness state
+        for (int i = 0; i < 5; i++)
+        {
+            boxFilled[i] = false;
+            if (boxLetterDisplays[i] != null)
+                boxLetterDisplays[i].text = " ";
+        }
+
+        // Clear in-flight letters + active columns
+        clearLeftoverLetters();           // NOTE: your existing method also destroys eraser/box visuals.
+        // If you want to keep eraser/box visuals between rounds,
+        // create a separate method that only clears letters.
+        activeColumns.Clear();
+    }
+
+// Use this instead of clearLeftoverLetters() if you want to keep eraser/box visuals alive:
+    private void ClearOnlyLetters()
+    {
+        var leftoverLetters = GameObject.FindGameObjectsWithTag("Letter");
+        foreach (var letter in leftoverLetters)
+            Destroy(letter);
+
+        activeColumns.Clear();
+    }
+    private IEnumerator FailCurrentWordAndAdvance()
+    {
+        if (questionLoader != null && _currentQuestion != null) questionLoader.MarkFail(_currentQuestion.answer);
+        strikesThisWord = 0;
+
+        // Clear the current attempt
+        ClearOnlyLetters();
+        for (int i = 0; i < 5; i++)
+        {
+            boxFilled[i] = false;
+            if (boxLetterDisplays[i] != null)
+                boxLetterDisplays[i].text = " ";
+        }
+
+        // Next word attempt
+        if (wordsAttempted >= maxWordAttempts)
+        {
+            StartCoroutine(EndGame());
+            yield break;
+        }
+
+        // Optional: small beat so the fail "lands"
+        yield return new WaitForSeconds(0.25f);
+
+        // Restart round (you can skip countdown if you prefer)
+        spawnRoutine = null;
+        StartCoroutine(CountdownCoroutine(skipCountdown: true));
+    }
+
     private bool AllBoxesFilled() {
         int filledCount = 0;
         foreach (bool filled in boxFilled) {
@@ -453,15 +539,19 @@ public class FivePositionsGameManager : MonoBehaviour
     /// <summary>
     /// Called by LetterMovement when a letter reaches its box.
     /// </summary>
-    public void OnLetterArrived(int boxIndex, char arrivedLetter, GameObject letterObj) {
-        if (gameIsOver) {
-            Destroy(letterObj);
+    public void OnLetterArrived(int boxIndex, char arrivedLetter, GameObject letterObj) { 
+        if (gameIsOver) { 
+            if (letterObj != null) Destroy(letterObj); 
             return;
         }
-
-        if (boxFilled[boxIndex]) {
+        
+        if (boxIndex < 0 || boxIndex >= boxFilled.Length) { 
+            if (letterObj != null) Destroy(letterObj); 
+            return;
+        }
+        if (boxFilled[boxIndex]) { 
             // Already filled with a correct letter
-            Destroy(letterObj);
+            if (letterObj != null) Destroy(letterObj); 
             return;
         }
 
@@ -471,33 +561,54 @@ public class FivePositionsGameManager : MonoBehaviour
             if (boxLetterDisplays[boxIndex] != null) {
                 boxLetterDisplays[boxIndex].text = arrivedLetter.ToString();
             }
-
-            // Play SFX
 //            audioSource.PlayOneShot(correctClip);
-
             DestroyLettersOnSameX(letterObj.transform.position.x);
         } else {
             // Incorrect letter
 //            audioSource.PlayOneShot(incorrectClip);
-
-            wrongGuessCount++;
-            // Apply penalty
-            timeLeft -= penaltyTime;
-            if (timeLeft < 0) timeLeft = 0;
-            UpdateTimerUI();
-
-            // Show penalty text briefly
-            if (penaltyText != null) {
-                penaltyText.gameObject.SetActive(true);
-                penaltyText.text = string.Format("-0:{0:00}", (int)penaltyTime);
-                StartCoroutine(HidePenaltyText());
+            // Two different rule sets:
+            // 1) Timer mode -> apply time penalty (and optional feedback)
+            // 2) No-timer (Group/Exam) -> strikes-per-word; fail word => clear attempt + new word
+            if (useTimer) { 
+                // Apply penalty
+                timeLeft -= penaltyTime; 
+                if (timeLeft < 0) timeLeft = 0; 
+                UpdateTimerUI();
+                // Show penalty text briefly
+                if (penaltyText != null) { 
+                    penaltyText.gameObject.SetActive(true); 
+                    penaltyText.text = string.Format("-0:{0:00}", (int)penaltyTime);
+                    StartCoroutine(HidePenaltyText());
+                }
             }
+            else { 
+                // Wrong letter wasn't erased (it made it to the bottom) -> strike
+                strikesThisWord++; 
+                // Optional: you can reuse penaltyText for strike feedback if desired
+                 if (penaltyText != null) { penaltyText.gameObject.SetActive(true); penaltyText.text = $"Strike {strikesThisWord}/{strikesPerWord}"; StartCoroutine(HidePenaltyText()); }
+                 if (strikesPerWord > 0 && strikesThisWord >= strikesPerWord) { 
+                     // Clean up this arriving letter & column tracking before advancing
+                     UnregisterActiveColumn(boxIndex); 
+                     if (letterObj != null) Destroy(letterObj);
+                     // Ensure we don't keep spawning into the old round while we reset
+                     if (spawnRoutine != null) { 
+                         StopCoroutine(spawnRoutine); 
+                         spawnRoutine = null;
+                     }
+                    
+                     // Fail the current word and move to the next attempt
+                     StartCoroutine(FailCurrentWordAndAdvance()); 
+                     return;
+                 }
+            }
+            
         }
         UnregisterActiveColumn(boxIndex);
-        Destroy(letterObj);
+        if (letterObj != null) Destroy(letterObj);
 
         // If all boxes are filled, increase score & start next round
         if (AllBoxesFilled()) {
+            if (questionLoader != null && _currentQuestion != null) questionLoader.MarkSuccess(_currentQuestion.answer);
             score++;
             UpdateScoreUI();
             StartCoroutine(RestartGameRoutine());
@@ -555,7 +666,7 @@ public class FivePositionsGameManager : MonoBehaviour
             }
             // Start the timer coroutine right away 
             StartCoroutine(GameTimerCoroutine());
-            questionLoader.LoadQuestionsForCurrentWeek();
+            questionLoader.LoadQuestionsForMode();
             // Run another "3-2-1" countdown, which will unpause the timer again
             StartCoroutine(CountdownCoroutine(false));
             
@@ -606,6 +717,11 @@ public class FivePositionsGameManager : MonoBehaviour
 
         // Log score to StatsManager using a consistent key
         StatsManager.Set_Numbered_Stat("StudyGameScore", score);
+        string examId = StatsManager.Get_String_Stat("CurrentExamId");
+        if (!string.IsNullOrEmpty(examId))
+        {
+            GameEvents.MarkCustomEventCompleted(examId, true);
+        }
 
         // Branch by context
         if (VNSceneManager.scene_manager != null)
@@ -614,7 +730,7 @@ public class FivePositionsGameManager : MonoBehaviour
             switch (currentMode)
             {
                 case GameMode.Exam:
-                    VNSceneManager.scene_manager.Start_Conversation(endExamConversation);
+                    VNSceneManager.scene_manager.Start_Conversation(pendingEndConversation);
 
                     break;
                     case GameMode.Group:
@@ -635,14 +751,11 @@ public class FivePositionsGameManager : MonoBehaviour
         }
 
         studyGameParent.SetActive(false);
-    }
+        pendingChallengeProfile = null;
+        pendingEndConversation  = null;
 
-    public void BackToHome()
-    {
-        //TODO: Adjust Player Stats
-        SceneManager.LoadScene("Home");
     }
-
+    
     /// <summary>
     /// Destroys any leftover letters still on the screen.
     /// </summary>
@@ -669,6 +782,8 @@ public class FivePositionsGameManager : MonoBehaviour
     public void SetMode(GameMode mode)
     {
         currentMode = mode;
+        if (questionLoader != null)
+            questionLoader.currentMode = mode;
 
         switch (mode)
         {

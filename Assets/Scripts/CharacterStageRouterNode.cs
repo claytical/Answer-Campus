@@ -13,64 +13,134 @@ namespace VNEngine
         {
             public Character character; // Exact match, e.g., "Breanna"
             public int stage;
+            [Min(0)] public int unlockWeek = 0;
             public ConversationManager conversation;
         }
-
-        public string currentSceneName; // Match PlayerPrefsExtra location value (e.g., "Library")
-        public string ambientFMODEventName;
-        public string musicFMODEventName;
-        public string characterMODEventName;
+        public StageRouteIndex stageRouteIndex;
         public List<StageConversation> routes;
+        public string currentSceneName; // Match PlayerPrefsExtra location value (e.g., "Library")
+        
+        
+        public EventReference ambientFMODEventName;
+        public EventReference musicFMODEventName;
         public List<ConversationManager> fallbackConversations;
         public ConversationManager repeatableFallback;
         private bool hasAudioManager = false;
         private EventInstance musicFMODEvent;
         private EventInstance ambientFMODEvent;
+#if UNITY_EDITOR
+        private void OnValidate()
+        {
+            // Only do this in the editor to keep runtime clean
+            if (stageRouteIndex == null) return;
+            if (string.IsNullOrEmpty(currentSceneName)) return;
+
+            // 1) Look up all index routes for this scene
+            var sceneRoutes = stageRouteIndex.GetRoutesForScene(currentSceneName);
+            if (sceneRoutes == null) return;
+
+            // 2) Build a new list, preserving existing conversation refs
+            var newRoutes = new List<StageConversation>();
+
+            foreach (var meta in sceneRoutes)
+            {
+                if (meta == null) continue;
+
+                // Try to find an existing row with same character + stage
+                StageConversation existing = null;
+                if (routes != null)
+                {
+                    existing = routes.Find(r =>
+                        r.character == meta.character &&
+                        r.stage == meta.stage);
+                }
+
+                var sc = existing ?? new StageConversation();
+                sc.character   = meta.character;
+                sc.stage       = meta.stage;
+                sc.unlockWeek  = meta.unlockWeek;
+                // sc.conversation stays whatever you previously assigned
+                newRoutes.Add(sc);
+            }
+
+            routes = newRoutes;
+            UnityEditor.EditorUtility.SetDirty(this);
+        }
+#endif
+
 public override void Run_Node()
 {
-    musicFMODEvent = FMODAudioManager.Instance.currentMusic;
-    ambientFMODEvent = FMODAudioManager.Instance.currentAmbient;
+    // --- Audio bootstrap (unchanged) ---
+    string audioKey = $"AudioStarted - {currentSceneName}";
+    if (!StatsManager.Get_Boolean_Stat(audioKey))
+    {
+        StatsManager.Set_Boolean_Stat(audioKey, true);
 
-    if (!string.IsNullOrEmpty(musicFMODEventName))
-    {
-        FMODAudioManager.Instance.PlayMusic(musicFMODEventName);
-    }
-    else
-    {
-        FMODAudioManager.Instance.StopMusic();
-    }
-
-    if (!string.IsNullOrEmpty(ambientFMODEventName))
-    {
-        FMODAudioManager.Instance.PlayAmbient(ambientFMODEventName);
-    }
-    List<CharacterLocation> characterLocations = PlayerPrefsExtra.GetList<CharacterLocation>("characterLocations", new List<CharacterLocation>());
-    CharacterLocation? selected = null;
-
-    // Find the first character placed on the map for this scene
-    foreach (CharacterLocation loc in characterLocations)
-    {
-        if (loc.location == currentSceneName)
+        if (FMODAudioManager.Instance != null)
         {
-            selected = loc;
-            break;
+            if (!musicFMODEventName.IsNull)
+                FMODAudioManager.Instance.PlayMusic(musicFMODEventName);
+
+            if (!ambientFMODEventName.IsNull)
+                FMODAudioManager.Instance.PlayAmbient(ambientFMODEventName);
         }
     }
 
-    if (selected.HasValue)
+    int currentWeek = Mathf.RoundToInt(StatsManager.Get_Numbered_Stat("Week"));
+
+    List<CharacterLocation> characterLocations =
+        PlayerPrefsExtra.GetList<CharacterLocation>("characterLocations", new List<CharacterLocation>());
+
+    Debug.Log($"[ROUTER] {characterLocations.Count} Character Locations (scene='{currentSceneName}', week={currentWeek})");
+
+    // --- NEW: collect all pins for this scene, newest-first ---
+    var pinsHere = new List<CharacterLocation>();
+    for (int i = characterLocations.Count - 1; i >= 0; i--)
     {
-        var loc = selected.Value;
+        var loc = characterLocations[i];
+        if (loc.location == currentSceneName)
+            pinsHere.Add(loc);
+    }
+
+    Debug.Log($"[ROUTER] pinsHere={pinsHere.Count} @ '{currentSceneName}'");
+
+    // Try each pin (newest first) until we successfully route
+    foreach (var loc in pinsHere)
+    {
         string statKey = $"{loc.character} - {currentSceneName} - Stage";
-        float stage = StatsManager.Get_Numbered_Stat(statKey);
+        float rawStage = StatsManager.Get_Numbered_Stat(statKey);
+        int stage = Mathf.RoundToInt(rawStage);
+
+        Debug.Log($"[Router] trying pin: char={loc.character} statKey='{statKey}' rawStage={rawStage} stageInt={stage}");
 
         foreach (StageConversation route in routes)
         {
-            if (route.character == loc.character && route.stage == stage)
-            {
-                Debug.Log($"Routing {loc.character} at stage {stage} to conversation: {route.conversation.name}");
+            Debug.Log(
+                $"[Router] cand: char={route.character} stage={route.stage} " +
+                $"unlockWeek={route.unlockWeek} conv={(route.conversation ? route.conversation.name : "NULL")}");
 
-           
-                // Set the parameter dynamically
+            if (route.character != loc.character || route.stage != stage)
+                continue;
+
+            if (currentWeek < route.unlockWeek)
+            {
+                Debug.Log(
+                    $"[Router] Matched {loc.character} stage {stage}, " +
+                    $"but locked until week {route.unlockWeek}. Current week: {currentWeek}. Skipping.");
+                continue;
+            }
+
+            if (route.conversation == null)
+            {
+                Debug.LogWarning($"[Router] Matched {loc.character} stage {stage} but conversation is NULL. Skipping.");
+                continue;
+            }
+
+            Debug.Log($"Routing {loc.character} at stage {stage} (unlockWeek {route.unlockWeek}) to: {route.conversation.name}");
+
+            // Drums
+            if (FMODAudioManager.Instance != null)
+            {
                 if (loc.character == Character.CHARLI)
                     FMODAudioManager.Instance.SetDrums(0);
                 else if (loc.character == Character.LEILANI)
@@ -79,15 +149,29 @@ public override void Run_Node()
                     FMODAudioManager.Instance.SetDrums(2);
                 else
                     FMODAudioManager.Instance.SetDrums(3);
-
-                route.conversation.Start_Conversation();
-                Finish_Node();
-                return;
             }
+
+            // Clear *this* pin (character+scene)
+            var pins = PlayerPrefsExtra.GetList<CharacterLocation>("characterLocations", new List<CharacterLocation>());
+            int removed = pins.RemoveAll(p =>
+                string.Equals(p.location, currentSceneName, System.StringComparison.Ordinal) &&
+                EqualityComparer<Character>.Default.Equals(p.character, loc.character));
+
+            PlayerPrefsExtra.SetList("characterLocations", pins);
+            if (removed > 0)
+                Debug.Log($"[LocationRouter] Cleared invite for {loc.character} @ {currentSceneName} after routing.");
+
+            route.conversation.Start_Conversation();
+            go_to_next_node = false;
+
+            Finish_Node();
+            return;
         }
+
+        Debug.Log($"[Router] No eligible route found for pin char={loc.character} stage={stage}. Trying next pin (if any).");
     }
 
-    // Fallbacks (unchanged)
+    // --- Fallbacks (unchanged) ---
     for (int i = 0; i < fallbackConversations.Count; i++)
     {
         var fallback = fallbackConversations[i];
@@ -122,8 +206,6 @@ public override void Run_Node()
 
     go_to_next_node = false;
     Finish_Node();
-    return;
-
 }
 
         public override void Button_Pressed() { }

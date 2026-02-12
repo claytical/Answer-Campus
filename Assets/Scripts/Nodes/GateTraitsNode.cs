@@ -15,21 +15,6 @@ namespace VNEngine
         public float value = 1f;     // e.g., Empathy >= 2
     }
 
-    public enum FootballCheckType
-    {
-        None,               // ignore football
-        IsWinningRecord,    // wins > losses
-        WinsAtLeast,        // wins >= threshold
-        WinRateAtLeast      // wins/played >= threshold (0..1)
-    }
-
-    [System.Serializable]
-    public class FootballRequirement
-    {
-        public FootballCheckType check = FootballCheckType.None;
-        public float threshold = 0f; // used for WinsAtLeast or WinRateAtLeast
-    }
-
     [System.Serializable]
     public class TraitDelta
     {
@@ -60,7 +45,7 @@ namespace VNEngine
         public bool continueCurrentOnFailure = true; 
         public override void Run_Node()
         {
-            bool passed = EvaluateTraitRequirements() && EvaluateFootballRequirement();
+            bool passed = EvaluateTraitRequirements();
 
             if (passed)
             {

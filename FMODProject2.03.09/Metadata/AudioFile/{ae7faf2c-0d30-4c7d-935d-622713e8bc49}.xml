@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<objects serializationModel="Studio.02.03.00">
+	<object class="AudioFile" id="{ae7faf2c-0d30-4c7d-935d-622713e8bc49}">
+		<property name="color">
+			<value>Blue</value>
+		</property>
+		<property name="assetPath">
+			<value>AMB_Library.wav</value>
+		</property>
+		<property name="isStreaming">
+			<value>true</value>
+		</property>
+		<property name="frequencyInKHz">
+			<value>48</value>
+		</property>
+		<property name="channelCount">
+			<value>2</value>
+		</property>
+		<property name="length">
+			<value>86.265333333333331</value>
+		</property>
+		<relationship name="masterAssetFolder">
+			<destination>{33fc172c-016a-4235-9242-e7ee3cd753a4}</destination>
+		</relationship>
+	</object>
+</objects>

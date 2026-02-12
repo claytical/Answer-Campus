@@ -5,7 +5,7 @@ namespace VNEngine
 {
     // Give this script a custom UI interface that shows and hides some fields based on the stat_type being used
     [CustomEditor(typeof(WaitNode))]
-    public class WaitNodeEditor : Editor
+    public class WaitNodeEditor : UnityEditor.Editor
     {
         override public void OnInspectorGUI()
         {

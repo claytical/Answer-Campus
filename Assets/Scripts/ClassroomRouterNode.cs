@@ -1,16 +1,10 @@
 using UnityEngine;
-using System.Collections.Generic;
-using FMODUnity;
 
 namespace VNEngine
 {
     public class ClassroomRouterNode : Node
     {
-        public Character character = Character.LEILANI; // Fixed: this node only applies to Leilani
         public string sceneName = "Lecture Hall";
-        public string ambientFMODEventName;
-        public string musicFMODEventName;
-        public string characterMODEventName;
 
         [System.Serializable]
         public class StageConversation
@@ -19,97 +13,50 @@ namespace VNEngine
             public ConversationManager conversation;
         }
 
-        [Header("Standard Routing")]
-        public List<StageConversation> stageRoutes;
-
-        [Header("Exam Overrides")]
+        [Header("Exams")]
         public ConversationManager midtermConversation;
         public ConversationManager finalConversation;
-        public int midtermWeek = 7;
-        public int finalWeek = 15;
-
-        [Header("Auto-Warp Missing Stages")] 
-        public bool autoWarpToMidterm = true;
-        public bool autoWarpToFinal = true;
-
-        [Header("Fallback Conversations")]
-        public List<ConversationManager> fallbackConversations;
-
+        
         public override void Run_Node()
         {
-            string statKey = $"{character} - {sceneName} - Stage";
-            int currentStage = (int)StatsManager.Get_Numbered_Stat(statKey);
             int currentWeek = (int)StatsManager.Get_Numbered_Stat("Week");
+            int midWeek     = SemesterHelper.MidtermsWeek;
+            int finWeek     = SemesterHelper.FinalsWeek;
 
-            Debug.Log($"[ClassroomRouterNode] Stage: {currentStage}, Week: {currentWeek}");
+            Debug.Log($"[ClassroomRouterNode] Week: {currentWeek} (Mid:{midWeek} Final:{finWeek})");
 
-            // Final exam override
-            if (currentWeek >= finalWeek && finalConversation != null)
+            // Finals preempts everything on its week, but only if not completed.
+            if (currentWeek == finWeek && finalConversation != null)
             {
-                if (autoWarpToFinal && currentStage < 7)
+                bool finalDone = GameEvents.IsCustomEventCompleted(GameEvents.FinalsEventId);
+                if (!finalDone)
                 {
-                    StatsManager.Set_Numbered_Stat(statKey, 7);
-                }
-
-                Debug.Log("Routing to final exam.");
-                finalConversation.Start_Conversation();
-                Finish_Node();
-                return;
-            }
-
-            // Midterm override
-            if (currentWeek >= midtermWeek && currentStage < 2 && midtermConversation != null)
-            {
-                if (autoWarpToMidterm)
-                {
-                    StatsManager.Set_Numbered_Stat(statKey, 2);
-                }
-
-                Debug.Log("Routing to midterm.");
-                midtermConversation.Start_Conversation();
-                Finish_Node();
-                return;
-            }
-
-            // Standard stage-based routing
-            foreach (StageConversation route in stageRoutes)
-            {
-                if (route.stage == currentStage)
-                {
-                    Debug.Log($"Routing to stage {currentStage} conversation.");
-                    route.conversation.Start_Conversation();
-                    if (ambientFMODEventName != null)
-                    {
-                        FMODAudioManager.Instance.PlayMusic(ambientFMODEventName);
-                    }
-
-                    if (musicFMODEventName != null)
-                    {
-                        FMODAudioManager.Instance.PlayMusic(musicFMODEventName);
-                    }
-
-                    if (characterMODEventName != null)
-                    {
-                        FMODAudioManager.Instance.PlayMusic(characterMODEventName);
-                    }
-                    Finish_Node();
+                    Debug.Log("[ClassroomRouterNode] Routing to FINAL exam (due, not completed).");
+                    finalConversation.Start_Conversation();
+                    go_to_next_node = false;
                     return;
                 }
+
+                Debug.Log("[ClassroomRouterNode] Final already completed; falling through.");
             }
 
-            // Fallback conversations (e.g., before classes begin)
-            foreach (var fallback in fallbackConversations)
+            // Midterm preempts everything on its week, but only if not completed.
+            if (currentWeek == midWeek && midtermConversation != null)
             {
-                if (fallback != null)
+                bool midDone = GameEvents.IsCustomEventCompleted(GameEvents.MidtermsEventId);
+                if (!midDone)
                 {
-                    Debug.Log("No matching stage or exam. Using fallback conversation.");
-                    fallback.Start_Conversation();
-                    Finish_Node();
+                    Debug.Log("[ClassroomRouterNode] Routing to MIDTERM exam (due, not completed).");
+                    midtermConversation.Start_Conversation();
+                    go_to_next_node = false;
                     return;
                 }
+
+                Debug.Log("[ClassroomRouterNode] Midterm already completed; falling through.");
             }
 
-            Debug.Log("No matching conversation found, and no fallback available.");
+            // Otherwise, fall through to whatever comes next in the graph (e.g., CharacterStageRouterNode).
+            go_to_next_node = true;
             Finish_Node();
         }
 
