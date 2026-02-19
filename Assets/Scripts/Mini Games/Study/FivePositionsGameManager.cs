@@ -232,15 +232,14 @@ public class FivePositionsGameManager : MonoBehaviour
             {
                 if (!isTimerPaused)
                 {
-                    timeLeft -= Time.deltaTime;
+                    if(timeLeft > 0.00f) timeLeft -= Time.deltaTime;
                     UpdateTimerUI();
 
-                    if (timeLeft <= 0 && !gameIsOver)
+                    if (timeLeft <= 0.00f && !gameIsOver)
                     {
                         timeLeft = 0;
                         UpdateTimerUI();
                         StartCoroutine(EndGame());
-
                     }
                 }
             }
@@ -572,7 +571,7 @@ public class FivePositionsGameManager : MonoBehaviour
             if (useTimer) { 
                 // Apply penalty
                 timeLeft -= penaltyTime; 
-                if (timeLeft < 0) timeLeft = 0; 
+                if (timeLeft <= 0) timeLeft = 0.00f; 
                 UpdateTimerUI();
                 // Show penalty text briefly
                 if (penaltyText != null) { 
