@@ -12,6 +12,7 @@ namespace VNEngine
         private GameObject textEntry;
         private TMP_InputField textInput;
         public string statName;
+
         // Called initially when the node is run, put most of your logic here
         public override void Run_Node()
         {
@@ -28,11 +29,26 @@ namespace VNEngine
 
         void EndInput(string input)
         {
+            bool valid = true;
             if (input.Length > 0)
             {
-              StatsManager.Set_String_Stat(statName, input);
-                textEntry.SetActive(false);
-                Finish_Node();
+                
+                for(int i = 0; i < input.Length; i++)
+                {
+                    if(!(('a' <= input[i] && input[i] <= 'z') || ('A' <= input[i] && input[i] <= 'Z') || input[i] == '-'))
+                    {
+                        Debug.Log("Non-alphanumeric character entered");
+                        valid = false;
+                        break;
+                    }
+                }
+                if(valid)
+                {
+                    StatsManager.Set_String_Stat(statName, input);
+                    textEntry.SetActive(false);
+                    Finish_Node();  
+                }
+                
             }
             else
             {
