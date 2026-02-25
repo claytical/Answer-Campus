@@ -19,6 +19,7 @@ public class MenuOptions : MonoBehaviour
             else
             {
                 LoadScene(sceneToLoad);
+                print("here");
                 this.gameObject.SetActive(false);
                 PlayerPrefs.SetInt("Game in Progress", 1);
             }
